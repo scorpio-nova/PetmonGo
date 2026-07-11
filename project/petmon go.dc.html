@@ -23,6 +23,10 @@
   .gscroll{scrollbar-width:none}
   @keyframes gfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   @keyframes gpop{0%{transform:translateY(24px);opacity:0}100%{transform:translateY(0);opacity:1}}
+  @keyframes rainbowGlow{0%,100%{filter:drop-shadow(0 0 10px #ff8fb1) drop-shadow(0 0 16px #f6cf3f)}33%{filter:drop-shadow(0 0 10px #77d8c0) drop-shadow(0 0 16px #86b7e0)}66%{filter:drop-shadow(0 0 10px #b692ff) drop-shadow(0 0 16px #ef6a4f)}}
+  .asset-icon{width:100%;height:100%;object-fit:contain;display:block}
+  .asset-pin{width:72px;height:72px;object-fit:contain;display:block}
+  .angel-frame{animation:rainbowGlow 3.6s ease-in-out infinite}
 </style>
 </helmet>
 
@@ -64,7 +68,10 @@
 
   <symbol id="n-map" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pen)"><path d="M7 11 L15 8 L25 11 L33 8 L33 30 L25 33 L15 30 L7 33 Z"/><path d="M15 8 L15 30 M25 11 L25 33"/></g></symbol>
   <symbol id="n-explore" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pen)"><circle cx="20" cy="20" r="14"/><path d="M26 14 L22 22 L14 26 L18 18 Z" fill="currentColor" stroke="none"/></g></symbol>
+  <symbol id="n-dex" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pen)"><rect x="9" y="7" width="22" height="26" rx="4"/><path d="M15 14 h10 M15 21 h10 M15 28 h6"/></g></symbol>
   <symbol id="n-me" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pen)"><circle cx="20" cy="14" r="7"/><path d="M8 34 C8 24 32 24 32 34"/></g></symbol>
+  <symbol id="n-mail" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pen)"><rect x="7" y="10" width="26" height="20" rx="4"/><path d="M9 13 l11 9 l11 -9"/></g></symbol>
+  <symbol id="n-gear" viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#pen)"><circle cx="20" cy="20" r="5"/><path d="M20 7 v5 M20 28 v5 M7 20 h5 M28 20 h5 M10.8 10.8 l3.5 3.5 M25.7 25.7 l3.5 3.5 M29.2 10.8 l-3.5 3.5 M14.3 25.7 l-3.5 3.5"/></g></symbol>
 </defs></svg>
 
 <div style="width:400px;padding:26px 0 40px;display:flex;flex-direction:column;align-items:center;gap:14px">
@@ -77,8 +84,9 @@
         <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-flex;align-items:center;border:2px solid #141414;border-radius:5px;padding:0 5px;height:19px;font-size:13px;font-weight:700">45</span><span style="width:3px;height:11px;background:#141414;border-radius:1px"></span></span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:2px">
-        <div style="display:flex;align-items:baseline;gap:9px"><span style="font-size:29px;font-weight:700;line-height:1;letter-spacing:-.5px">petmon.</span><span style="font-size:16px;color:#8f8b83">{{ screenTitle }}</span></div>
-        <span onClick="{{ goMe }}" style="width:26px;height:26px;border-radius:50%;background:#141414;cursor:pointer;position:relative">
+        <div style="display:flex;align-items:baseline;gap:9px"><span style="font-size:29px;font-weight:700;line-height:1;letter-spacing:-.5px">petmon go</span><span style="font-size:16px;color:#8f8b83">{{ screenTitle }}</span></div>
+        <span onClick="{{ openInbox }}" style="width:30px;height:28px;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;color:#141414">
+          <svg style="width:28px;height:28px"><use href="#n-mail"/></svg>
           <sc-if value="{{ dexHasNews }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#ef6a4f;border:2px solid #fffdf8"></span></sc-if>
         </span>
       </div>
@@ -116,12 +124,14 @@
           <!-- PET PINS -->
           <sc-for list="{{ mapPets }}" as="p" hint-placeholder-count="3">
             <div onClick="{{ p.openThis }}" style="position:absolute;left:{{ p.x }};top:{{ p.y }};transform:translate(-50%,-100%);cursor:pointer;display:flex;flex-direction:column;align-items:center;z-index:3;animation:gfloat 4.5s ease-in-out infinite">
-              <div style="position:relative;width:70px;height:92px">
-                <svg style="position:absolute;inset:0;width:100%;height:100%"><use href="#c-pinbase"/></svg>
-                <sc-if value="{{ p.isCat }}" hint-placeholder-val="{{ true }}"><svg style="position:absolute;left:11px;top:8px;width:48px;height:48px"><use href="#c-cat"/></svg></sc-if>
-                <sc-if value="{{ p.isDog }}" hint-placeholder-val="{{ false }}"><svg style="position:absolute;left:11px;top:8px;width:48px;height:48px"><use href="#c-dog"/></svg></sc-if>
+              <div style="position:relative;width:72px;height:94px">
+                <img class="asset-pin" src="./assets/pin.png" alt="" style="position:absolute;left:0;top:0">
+                <div style="position:absolute;left:16px;top:11px;width:40px;height:40px;border-radius:50%;background:{{ p.iconBg }};padding:3px">
+                  <sc-if value="{{ p.isCat }}" hint-placeholder-val="{{ true }}"><img class="asset-icon" src="./assets/cat.png" alt=""></sc-if>
+                  <sc-if value="{{ p.isDog }}" hint-placeholder-val="{{ false }}"><img class="asset-icon" src="./assets/dog.png" alt=""></sc-if>
+                </div>
               </div>
-              <span style="font-size:13px;font-weight:700;margin-top:2px;background:#141414;color:#fff;padding:1px 9px;border-radius:9px">{{ p.en }}</span>
+              <span style="font-size:13px;font-weight:700;margin-top:2px;background:{{ p.labelBg }};color:#141414;padding:1px 9px;border:2px solid #141414;border-radius:9px">{{ p.breed }}</span>
             </div>
           </sc-for>
 
@@ -135,15 +145,15 @@
 
           <!-- FRIENDLY PLACES -->
           <div style="position:absolute;left:74%;top:24%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;z-index:2">
-            <div style="width:40px;height:40px;border:4px solid #141414;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center"><svg style="width:22px;height:22px"><use href="#c-cup"/></svg></div>
+            <div style="width:46px;height:46px;border:3px solid #141414;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;padding:4px"><img class="asset-icon" src="./assets/cafe.png" alt=""></div>
             <span style="font-size:12px;background:#141414;color:#fff;padding:0 7px;border-radius:8px;margin-top:2px">咪想咖啡</span>
           </div>
           <div style="position:absolute;left:52%;top:70%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;z-index:2">
-            <div style="width:40px;height:40px;border:4px solid #141414;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center"><svg style="width:20px;height:20px"><use href="#c-cross"/></svg></div>
+            <div style="width:46px;height:46px;border:3px solid #141414;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;padding:4px"><img class="asset-icon" src="./assets/hospital.png" alt=""></div>
             <span style="font-size:12px;background:#141414;color:#fff;padding:0 7px;border-radius:8px;margin-top:2px">威威宠物医院</span>
           </div>
           <div style="position:absolute;left:16%;top:76%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;z-index:2">
-            <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center"><svg style="width:34px;height:38px"><use href="#c-park"/></svg></div>
+            <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><img class="asset-icon" src="./assets/park.png" alt=""></div>
             <span style="font-size:12px;background:#141414;color:#fff;padding:0 7px;border-radius:8px;margin-top:2px">停狗处</span>
           </div>
 
@@ -158,8 +168,8 @@
             <div onClick="{{ a.openThis }}" style="display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:2px solid #eceae3;cursor:pointer">
               <div style="position:relative;flex:none;width:56px;height:56px;display:flex;align-items:center;justify-content:center">
                 <svg style="position:absolute;inset:0;width:100%;height:100%" preserveAspectRatio="none" viewBox="0 0 100 100"><rect x="5" y="5" width="90" height="90" rx="24" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-                <sc-if value="{{ a.isCat }}" hint-placeholder-val="{{ true }}"><svg style="width:42px;height:42px;position:relative"><use href="#c-cat"/></svg></sc-if>
-                <sc-if value="{{ a.isDog }}" hint-placeholder-val="{{ false }}"><svg style="width:42px;height:42px;position:relative"><use href="#c-dog"/></svg></sc-if>
+                <sc-if value="{{ a.isCat }}" hint-placeholder-val="{{ true }}"><img class="asset-icon" src="./assets/cat.png" alt="" style="width:42px;height:42px;position:relative"></sc-if>
+                <sc-if value="{{ a.isDog }}" hint-placeholder-val="{{ false }}"><img class="asset-icon" src="./assets/dog.png" alt="" style="width:42px;height:42px;position:relative"></sc-if>
               </div>
               <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:21px;font-weight:700">{{ a.en }}</span><span style="font-size:16px;color:#8f8b83">{{ a.cn }}</span><span style="font-size:12px;font-weight:700;border:2px solid #141414;border-radius:8px;padding:0 6px">{{ a.tag }}</span></div>
@@ -182,9 +192,8 @@
               <div onClick="{{ a.openThis }}" style="flex:none;width:96px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
                 <div style="position:relative;width:84px;height:84px;display:flex;align-items:center;justify-content:center">
                   <svg style="position:absolute;inset:0;width:100%;height:100%" preserveAspectRatio="none" viewBox="0 0 100 100"><rect x="5" y="5" width="90" height="90" rx="26" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-                  <sc-if value="{{ a.isAngel }}" hint-placeholder-val="{{ false }}"><svg style="width:60px;height:64px;position:relative"><use href="#c-angel"/></svg></sc-if>
-                  <sc-if value="{{ a.plainCat }}" hint-placeholder-val="{{ true }}"><svg style="width:60px;height:60px;position:relative"><use href="#c-cat"/></svg></sc-if>
-                  <sc-if value="{{ a.plainDog }}" hint-placeholder-val="{{ false }}"><svg style="width:60px;height:60px;position:relative"><use href="#c-dog"/></svg></sc-if>
+                  <sc-if value="{{ a.isCat }}" hint-placeholder-val="{{ true }}"><img class="asset-icon" src="./assets/cat.png" alt="" style="width:60px;height:60px;position:relative"></sc-if>
+                  <sc-if value="{{ a.isDog }}" hint-placeholder-val="{{ false }}"><img class="asset-icon" src="./assets/dog.png" alt="" style="width:60px;height:60px;position:relative"></sc-if>
                 </div>
                 <span style="font-size:16px;font-weight:700;line-height:1">{{ a.en }}</span>
               </div>
@@ -255,7 +264,32 @@
       </div>
       </sc-if>
 
-      <!-- ============ P06 ME / DEX ============ -->
+      <!-- ============ P04 DEX ============ -->
+      <sc-if value="{{ showDex }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:10px 22px 24px;display:flex;flex-direction:column">
+        <div style="width:100%;display:flex;align-items:baseline;justify-content:space-between">
+          <span style="font-size:24px;font-weight:700">宠物图鉴 · pet dex</span>
+          <sc-if value="{{ dexHasNews }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:700;color:#ef6a4f">● 有新动态 new!</span></sc-if>
+        </div>
+        <div style="font-size:15px;color:#8f8b83;margin-top:4px">收集附近遇见过的猫狗，天使宠物会保留彩色纪念框。</div>
+        <div style="width:100%;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ collected }}" as="a" hint-placeholder-count="6">
+            <div onClick="{{ a.openThis }}" style="position:relative;padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+              <svg class="{{ a.frameClass }}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 100 120"><rect x="3" y="3" width="94" height="114" rx="12" fill="{{ a.cardFill }}" stroke="{{ a.frameStroke }}" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+              <sc-if value="{{ a.hasUpdate }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:8px;right:10px;font-size:12px;font-weight:700;background:#ef6a4f;color:#fff;border-radius:8px;padding:0 7px;z-index:2">新动态</span></sc-if>
+              <div style="width:74px;height:74px;display:flex;align-items:center;justify-content:center;position:relative">
+                <sc-if value="{{ a.isCat }}" hint-placeholder-val="{{ true }}"><img class="asset-icon" src="./assets/cat.png" alt=""></sc-if>
+                <sc-if value="{{ a.isDog }}" hint-placeholder-val="{{ false }}"><img class="asset-icon" src="./assets/dog.png" alt=""></sc-if>
+              </div>
+              <div style="position:relative;display:flex;align-items:baseline;gap:6px"><span style="font-size:18px;font-weight:700;line-height:1">{{ a.en }}</span><span style="font-size:13px;color:#8f8b83">{{ a.cn }}</span></div>
+              <div style="position:relative;font-size:12px;font-weight:700;border:2px solid #141414;border-radius:8px;padding:0 7px;background:{{ a.labelBg }}">{{ a.breed }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ P06 ME ============ -->
       <sc-if value="{{ showMe }}" hint-placeholder-val="{{ false }}">
       <div style="padding:10px 22px 24px;display:flex;flex-direction:column;align-items:center">
         <div style="position:relative;width:150px;height:168px">
@@ -272,24 +306,25 @@
           <div style="flex:1;padding:12px 6px;text-align:center;position:relative;border-left:2px solid #eceae3"><div style="font-size:28px;font-weight:700;line-height:1">8</div><div style="font-size:13px;color:#8f8b83">去过 spots</div></div>
         </div>
 
-        <div style="width:100%;margin-top:20px;display:flex;align-items:baseline;justify-content:space-between">
-          <span style="font-size:20px;font-weight:700">我的图鉴 · my dex</span>
-          <sc-if value="{{ dexHasNews }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:700;color:#ef6a4f">● 有新动态 new!</span></sc-if>
-        </div>
-        <div style="width:100%;margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <sc-for list="{{ collected }}" as="a" hint-placeholder-count="6">
-            <div onClick="{{ a.openThis }}" style="position:relative;padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
-              <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 100 120"><rect x="3" y="3" width="94" height="114" rx="12" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-              <sc-if value="{{ a.hasUpdate }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:8px;right:10px;font-size:12px;font-weight:700;background:#ef6a4f;color:#fff;border-radius:8px;padding:0 7px;z-index:2">新动态</span></sc-if>
-              <div style="width:74px;height:74px;display:flex;align-items:center;justify-content:center;position:relative">
-                <sc-if value="{{ a.isAngel }}" hint-placeholder-val="{{ false }}"><svg style="width:66px;height:70px"><use href="#c-angel"/></svg></sc-if>
-                <sc-if value="{{ a.plainCat }}" hint-placeholder-val="{{ true }}"><svg style="width:66px;height:66px"><use href="#c-cat"/></svg></sc-if>
-                <sc-if value="{{ a.plainDog }}" hint-placeholder-val="{{ false }}"><svg style="width:66px;height:66px"><use href="#c-dog"/></svg></sc-if>
-              </div>
-              <div style="position:relative;display:flex;align-items:baseline;gap:6px"><span style="font-size:18px;font-weight:700;line-height:1">{{ a.en }}</span><span style="font-size:13px;color:#8f8b83">{{ a.cn }}</span></div>
-              <div style="position:relative;font-size:12px;font-weight:700;border:2px solid #141414;border-radius:8px;padding:0 7px">{{ a.tag }}</div>
-            </div>
-          </sc-for>
+        <div style="width:100%;margin-top:20px;display:flex;flex-direction:column;gap:12px">
+          <div onClick="{{ openAchievements }}" style="position:relative;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 70"><rect x="2" y="2" width="196" height="66" rx="10" fill="#fff8e2" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <svg style="width:34px;height:34px;position:relative;flex:none"><use href="#c-ribbon"/></svg>
+            <div style="position:relative;flex:1;min-width:0"><div style="font-size:20px;font-weight:700;line-height:1">成就 achievements</div><div style="font-size:14px;color:#8f8b83;margin-top:3px">本周最佳投喂人、连续记录 7 天</div></div>
+            <span style="position:relative;font-size:20px;color:#8f8b83">›</span>
+          </div>
+          <div onClick="{{ openProfile }}" style="position:relative;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 70"><rect x="2" y="2" width="196" height="66" rx="10" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <svg style="width:34px;height:34px;position:relative;flex:none"><use href="#n-me"/></svg>
+            <div style="position:relative;flex:1;min-width:0"><div style="font-size:20px;font-weight:700;line-height:1">个人信息 profile</div><div style="font-size:14px;color:#8f8b83;margin-top:3px">头像、昵称、常驻街区与联系方式</div></div>
+            <span style="position:relative;font-size:20px;color:#8f8b83">›</span>
+          </div>
+          <div onClick="{{ openSettings }}" style="position:relative;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 70"><rect x="2" y="2" width="196" height="66" rx="10" fill="#eef4dc" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <svg style="width:34px;height:34px;position:relative;flex:none"><use href="#n-gear"/></svg>
+            <div style="position:relative;flex:1;min-width:0"><div style="font-size:20px;font-weight:700;line-height:1">设置 settings</div><div style="font-size:14px;color:#8f8b83;margin-top:3px">通知、隐私、地图偏好与数据管理</div></div>
+            <span style="position:relative;font-size:20px;color:#8f8b83">›</span>
+          </div>
         </div>
       </div>
       </sc-if>
@@ -332,7 +367,8 @@
             <div onClick="{{ openAngel }}" style="position:relative;margin-top:16px;padding:14px 16px;cursor:pointer">
               <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 80"><rect x="2" y="2" width="196" height="76" rx="10" fill="#fff8e2" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
               <div style="position:relative;display:flex;align-items:center;gap:12px">
-                <svg style="width:40px;height:44px;flex:none"><use href="#c-angel"/></svg>
+                <sc-if value="{{ current.isCat }}" hint-placeholder-val="{{ true }}"><img class="asset-icon" src="./assets/cat.png" alt="" style="width:42px;height:42px;flex:none"></sc-if>
+                <sc-if value="{{ current.isDog }}" hint-placeholder-val="{{ false }}"><img class="asset-icon" src="./assets/dog.png" alt="" style="width:42px;height:42px;flex:none"></sc-if>
                 <div style="flex:1"><div style="font-size:18px;font-weight:700">天使宠物 · angel</div><div style="font-size:14px;color:#8f8b83">TA 去了喵星 · 给 TA 留个小礼物吧</div></div>
                 <span style="font-size:20px;color:#8f8b83">›</span>
               </div>
@@ -352,9 +388,10 @@
     <sc-if value="{{ showAngel }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;z-index:50;background:rgba(20,20,20,.4);display:flex;align-items:center;justify-content:center" onClick="{{ closeAngel }}">
       <div style="position:relative;width:320px;padding:26px 24px;background:#fff8e2;animation:gpop .25s ease-out" onClick="{{ stop }}">
-        <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 200"><rect x="2" y="2" width="196" height="196" rx="14" fill="none" stroke="#141414" stroke-width="6" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+        <svg class="angel-frame" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 200"><rect x="2" y="2" width="196" height="196" rx="14" fill="none" stroke="#ff8fb1" stroke-width="6" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
         <div style="position:relative;display:flex;flex-direction:column;align-items:center;text-align:center">
-          <svg style="width:84px;height:90px"><use href="#c-angel"/></svg>
+          <sc-if value="{{ current.isCat }}" hint-placeholder-val="{{ true }}"><img class="asset-icon" src="./assets/cat.png" alt="" style="width:86px;height:86px"></sc-if>
+          <sc-if value="{{ current.isDog }}" hint-placeholder-val="{{ false }}"><img class="asset-icon" src="./assets/dog.png" alt="" style="width:86px;height:86px"></sc-if>
           <div style="font-size:24px;font-weight:700;margin-top:6px">{{ current.en }} · {{ current.cn }}</div>
           <div style="font-size:15px;color:#8f8b83">天使宠物卡片 · angel card</div>
           <sc-if value="{{ notGifted }}" hint-placeholder-val="{{ true }}">
@@ -412,7 +449,7 @@
         <div onClick="{{ matchKnown }}" style="position:relative;margin-top:8px;padding:14px 16px;cursor:pointer">
           <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 80"><rect x="2" y="2" width="196" height="76" rx="10" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
           <div style="position:relative;display:flex;align-items:center;gap:12px">
-            <svg style="width:46px;height:46px;flex:none"><use href="#c-cat"/></svg>
+            <img class="asset-icon" src="./assets/cat.png" alt="" style="width:46px;height:46px;flex:none">
             <div style="flex:1"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:20px;font-weight:700">Catt</span><span style="font-size:15px;color:#8f8b83">橘座</span></div><div style="font-size:14px;color:#8f8b83">相似度 89% · Block A 小区</div></div>
             <span style="font-size:15px;font-weight:700;background:#141414;color:#fff;border-radius:10px;padding:3px 12px">是 TA</span>
           </div>
@@ -542,6 +579,35 @@
     </div>
     </sc-if>
 
+    <!-- ============ INBOX ============ -->
+    <sc-if value="{{ showInbox }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:45;background:rgba(20,20,20,.35);display:flex;align-items:flex-start;justify-content:center;padding-top:82px" onClick="{{ close }}">
+      <div style="position:relative;width:342px;background:#fffdf8;border:3px solid #141414;border-radius:22px;padding:18px 18px 20px;animation:gpop .2s ease-out" onClick="{{ stop }}">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:22px;font-weight:700">消息与通知 · inbox</div>
+          <span onClick="{{ close }}" style="font-size:24px;font-weight:700;cursor:pointer">×</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+          <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="#fff8e2" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <img class="asset-icon" src="./assets/catfood.png" alt="" style="width:36px;height:36px;position:relative;flex:none">
+            <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">Memw 收到新投喂</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">Mille 在咪想咖啡门口留下小鱼干</div></div>
+          </div>
+          <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="#eef4dc" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <img class="asset-icon" src="./assets/label.png" alt="" style="width:36px;height:36px;position:relative;flex:none">
+            <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">图鉴有新动态</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">Catt 今天 14:40 出现在车棚顶</div></div>
+          </div>
+          <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="#e8f4ff" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <img class="asset-icon" src="./assets/water.png" alt="" style="width:36px;height:36px;position:relative;flex:none">
+            <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">附近补水点更新</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">Riverside 新增可用水碗</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
     <!-- TOAST -->
     <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
       <div style="position:absolute;left:50%;bottom:110px;transform:translateX(-50%);z-index:60;background:#141414;color:#fff;font-size:16px;font-weight:700;border-radius:14px;padding:8px 18px;white-space:nowrap;animation:gpop .2s ease-out">{{ toast }}</div>
@@ -555,9 +621,12 @@
         <div style="width:54px;height:54px;margin-top:-26px;border-radius:50%;background:#141414;border:3px solid #fffdf8;box-shadow:0 4px 0 rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:36px;font-weight:700;line-height:1">+</div>
         <span style="font-size:13px;font-weight:700;margin-top:2px">发布 post</span>
       </div>
+      <div onClick="{{ goDex }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:{{ cDex }};position:relative">
+        <svg style="width:27px;height:27px"><use href="#n-dex"/></svg><span style="font-size:13px;font-weight:700">图鉴 dex</span>
+        <sc-if value="{{ dexHasNews }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;right:16px;width:9px;height:9px;border-radius:50%;background:#ef6a4f"></span></sc-if>
+      </div>
       <div onClick="{{ goMe }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:{{ cMe }};position:relative">
         <svg style="width:27px;height:27px"><use href="#n-me"/></svg><span style="font-size:13px;font-weight:700">我的 me</span>
-        <sc-if value="{{ dexHasNews }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;right:26px;width:9px;height:9px;border-radius:50%;background:#ef6a4f"></span></sc-if>
       </div>
     </div>
 
@@ -569,7 +638,7 @@
 class Component extends DCLogic {
   state = {
     tab: 'map',
-    view: null,           // null | pub | pet | angel | upload | recognize | newpet | pubevent | event
+    view: null,           // null | inbox | pub | pet | angel | upload | recognize | newpet | pubevent | event
     petId: null,
     eventId: null,
     gifted: false,
@@ -581,12 +650,12 @@ class Component extends DCLogic {
     eventType: '丢失',
     eventDesc: '',
     pets: [
-      { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', tag:'野生', area:'Block A 小区', dist:'40m',  stars:4, seen:105, collected:true, x:'76%', y:'26%', note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
-      { id:'cat2', en:'Memw', cn:'奶盖', kind:'cat', tag:'家养', area:'Maple St 街', dist:'120m', stars:4, seen:76,  collected:true, x:'24%', y:'62%', note:'见人就翻肚皮的社交悍匪，散养中。', trace:[{t:'09:10',p:'自家窗台'},{t:'13:30',p:'咪想咖啡门口'}] },
-      { id:'dog1', en:'Dada', cn:'旺仔', kind:'dog', tag:'家养', area:'Riverside 河边', dist:'210m', stars:3, seen:35, collected:true, x:'72%', y:'82%', note:'河边散步搭子，尾巴摇成螺旋桨。', trace:[{t:'07:40',p:'河边晨跑'},{t:'16:00',p:'停狗处等主人'}] },
-      { id:'cat3', en:'Onion', cn:'洋葱头', kind:'cat', tag:'野生', area:'便利店', dist:'', stars:3, seen:35, collected:true, x:'', y:'', note:'躲在纸箱里，以为纸箱是隐身的。', trace:[{t:'11:00',p:'便利店纸箱'}] },
-      { id:'cat4', en:'Scar', cn:'刀疤', kind:'cat', tag:'天使', area:'老槐树下', dist:'', stars:5, seen:120, collected:true, x:'', y:'', note:'街区传奇。去年冬天去了喵星，大家还在老地方给它留吃的。', trace:[] },
-      { id:'cat5', en:'Mochi', cn:'小萌萌', kind:'cat', tag:'野生', area:'公园', dist:'', stars:3, seen:14, collected:true, x:'', y:'', note:'小小的，圆圆的，一天睡 20 个小时。', trace:[{t:'10:20',p:'公园长椅下'}] }
+      { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', breed:'奶牛猫', tag:'野生', area:'Block A 小区', dist:'40m',  stars:4, seen:105, collected:true, x:'76%', y:'26%', note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
+      { id:'cat2', en:'Memw', cn:'奶盖', kind:'cat', breed:'三花猫', tag:'家养', area:'Maple St 街', dist:'120m', stars:4, seen:76,  collected:true, x:'24%', y:'62%', note:'见人就翻肚皮的社交悍匪，散养中。', trace:[{t:'09:10',p:'自家窗台'},{t:'13:30',p:'咪想咖啡门口'}] },
+      { id:'dog1', en:'Dada', cn:'旺仔', kind:'dog', breed:'小狗', tag:'家养', area:'Riverside 河边', dist:'210m', stars:3, seen:35, collected:true, x:'72%', y:'82%', note:'河边散步搭子，尾巴摇成螺旋桨。', trace:[{t:'07:40',p:'河边晨跑'},{t:'16:00',p:'停狗处等主人'}] },
+      { id:'cat3', en:'Onion', cn:'洋葱头', kind:'cat', breed:'狸花猫', tag:'野生', area:'便利店', dist:'', stars:3, seen:35, collected:true, x:'', y:'', note:'躲在纸箱里，以为纸箱是隐身的。', trace:[{t:'11:00',p:'便利店纸箱'}] },
+      { id:'cat4', en:'Scar', cn:'刀疤', kind:'cat', breed:'天使猫', tag:'天使', area:'老槐树下', dist:'', stars:5, seen:120, collected:true, x:'', y:'', note:'街区传奇。去年冬天去了喵星，大家还在老地方给它留吃的。', trace:[] },
+      { id:'cat5', en:'Mochi', cn:'小萌萌', kind:'cat', breed:'奶牛猫', tag:'野生', area:'公园', dist:'', stars:3, seen:14, collected:true, x:'', y:'', note:'小小的，圆圆的，一天睡 20 个小时。', trace:[{t:'10:20',p:'公园长椅下'}] }
     ],
     events: [
       { id:'e1', type:'丢失', title:'小白走丢了', place:'Maple St 街角', time:'2 小时前', by:'Momo', desc:'白色田园猫，戴蓝色项圈，胆子小。昨晚从 3 号楼窗户跑出去，最后出现在街角便利店附近。' },
@@ -621,12 +690,29 @@ class Component extends DCLogic {
     }};
   }
 
+  petVisual(a){
+    const isCat = a.kind === 'cat';
+    const palette = {
+      '奶牛猫': { bg:'#f9f1d9', label:'#f6cf3f' },
+      '狸花猫': { bg:'#e7d2ae', label:'#d9e5a6' },
+      '三花猫': { bg:'#ffe1d8', label:'#ffb27a' },
+      '天使猫': { bg:'#f7ecff', label:'#d6c5ff' },
+      '小狗': { bg:'#e8f4ff', label:'#86b7e0' }
+    };
+    const p = palette[a.breed] || (isCat ? palette['狸花猫'] : palette['小狗']);
+    return { iconSrc: isCat ? './assets/cat.png' : './assets/dog.png', iconBg: p.bg, labelBg: p.label };
+  }
+
   enrich(a){
     const isCat = a.kind === 'cat', isAngel = a.tag === '天使';
-    return { ...a,
+    const visual = this.petVisual(a);
+    return { ...a, ...visual,
       isCat, isDog: !isCat, isAngel, notAngel: !isAngel,
       plainCat: isCat && !isAngel, plainDog: !isCat && !isAngel,
       photoId: 'photo-' + a.id,
+      cardFill: isAngel ? '#fff8e2' : '#fff',
+      frameStroke: isAngel ? '#ff8fb1' : '#141414',
+      frameClass: isAngel ? 'angel-frame' : '',
       starStr: '★★★★★'.slice(0, a.stars) + '☆☆☆☆☆'.slice(0, 5 - a.stars),
       openThis: () => this.openPet(a.id)
     };
@@ -642,25 +728,29 @@ class Component extends DCLogic {
     const mapEvents = events.slice(0, 1).map(e => ({ ...e, x: '30%', y: '22%' }));
     const current = pets.find(a => a.id === s.petId) || pets[0];
     const currentEvent = events.find(e => e.id === s.eventId) || events[0];
-    const titles = { map: 'nearby 附近', explore: 'explore 探索', me: 'my dex 图鉴' };
+    const titles = { map: 'nearby 附近', explore: 'explore 探索', dex: 'dex 图鉴', me: 'me 我的' };
     const act = '#141414', dim = '#c4c1ba';
     return {
       screenTitle: titles[s.tab],
-      showMap: s.tab === 'map', showExplore: s.tab === 'explore', showMe: s.tab === 'me',
-      goMap: () => this.go('map'), goExplore: () => this.go('explore'), goMe: () => this.go('me'),
-      cMap: s.tab === 'map' ? act : dim, cExplore: s.tab === 'explore' ? act : dim, cMe: s.tab === 'me' ? act : dim,
+      showMap: s.tab === 'map', showExplore: s.tab === 'explore', showDex: s.tab === 'dex', showMe: s.tab === 'me',
+      goMap: () => this.go('map'), goExplore: () => this.go('explore'), goDex: () => this.go('dex'), goMe: () => this.go('me'),
+      cMap: s.tab === 'map' ? act : dim, cExplore: s.tab === 'explore' ? act : dim, cDex: s.tab === 'dex' ? act : dim, cMe: s.tab === 'me' ? act : dim,
 
-      showPub: s.view === 'pub', showPet: s.view === 'pet', showAngel: s.view === 'angel',
+      showPub: s.view === 'pub', showInbox: s.view === 'inbox', showPet: s.view === 'pet', showAngel: s.view === 'angel',
       showUpload: s.view === 'upload', showRecognize: s.view === 'recognize',
       showNewPet: s.view === 'newpet', showPubEvent: s.view === 'pubevent', showEvent: s.view === 'event',
 
       openPub: () => this.setState({ view: 'pub' }),
+      openInbox: () => this.setState({ view: 'inbox' }),
       goRecognize: () => this.setState({ view: 'recognize' }),
       goPubEvent: () => this.setState({ view: 'pubevent' }),
       goNewPet: () => this.setState({ view: 'newpet' }),
       backToRecognize: () => this.setState({ view: 'recognize' }),
       matchKnown: () => this.openPet('cat1'),
       close: this.close, stop: this.stop,
+      openAchievements: () => this.showToast('成就已同步'),
+      openProfile: () => this.showToast('个人信息入口'),
+      openSettings: () => this.showToast('设置入口'),
 
       openAngel: () => this.setState({ view: 'angel' }),
       closeAngel: () => this.setState({ view: 'pet' }),
@@ -672,7 +762,7 @@ class Component extends DCLogic {
       backToPet: () => this.setState({ view: 'pet' }),
       submitUpload: () => {
         this.setState({
-          view: null, tab: 'me',
+          view: null, tab: 'dex',
           myFeeds: this.state.myFeeds + 1,
           pets: this.state.pets.map(p => p.id === current.id ? { ...p, seen: p.seen + 1, hasUpdate: true } : p)
         });
@@ -686,7 +776,7 @@ class Component extends DCLogic {
       tagChips: ['野生','家养','天使'].map(t => this.chip(t, s.newPetTag === t, () => this.setState({ newPetTag: t }))),
       createPet: () => {
         const id = 'new' + Date.now();
-        const pet = { id, en: s.newPetName || 'Nameless', cn: '新朋友', kind: s.newPetKind, tag: s.newPetTag,
+        const pet = { id, en: s.newPetName || 'Nameless', cn: '新朋友', kind: s.newPetKind, breed: s.newPetKind === 'cat' ? '狸花猫' : '小狗', tag: s.newPetTag,
           area: '当前位置', dist: '0m', stars: 3, seen: 1, collected: true, hasUpdate: true, x: '', y: '',
           note: '刚刚建档的新朋友，欢迎来到地图！', trace: [{ t: '12:51', p: '当前位置 · 初次相遇' }] };
         this.setState({ pets: [...this.state.pets, pet], view: 'pet', petId: id, newPetName: '' });
