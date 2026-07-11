@@ -92,7 +92,7 @@
         <div style="display:flex;align-items:baseline;gap:9px"><span style="font-size:29px;font-weight:700;line-height:1;letter-spacing:-.5px">petmon go</span><span style="font-size:16px;color:#8f8b83">{{ screenTitle }}</span></div>
         <span onClick="{{ openInbox }}" style="width:30px;height:28px;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;color:#141414">
           <svg style="width:28px;height:28px"><use href="#n-mail"/></svg>
-          <sc-if value="{{ dexHasNews }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#ef6a4f;border:2px solid #fffdf8"></span></sc-if>
+          <sc-if value="{{ inboxUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#ef6a4f;border:2px solid #fffdf8"></span></sc-if>
         </span>
       </div>
     </div>
@@ -449,7 +449,7 @@
         <div style="margin-top:16px;font-size:16px;color:#8f8b83">地点 · where</div>
         <div style="display:flex;align-items:center;gap:8px;font-size:19px;font-weight:700"><svg style="width:18px;height:18px"><use href="#c-loc"/></svg>{{ current.area }} · 自动定位</div>
         <div style="margin-top:12px;font-size:16px;color:#8f8b83">这次相遇 · note</div>
-        <textarea rows="3" placeholder="今天 TA 心情怎么样？" style="width:100%;font-size:18px;border:2.5px solid #141414;border-radius:14px;padding:10px 12px;background:#fff;resize:none"></textarea>
+        <textarea value="{{ uploadNote }}" onChange="{{ onUploadNote }}" rows="3" placeholder="今天 TA 心情怎么样？" style="width:100%;font-size:18px;border:2.5px solid #141414;border-radius:14px;padding:10px 12px;background:#fff;resize:none"></textarea>
         <div onClick="{{ submitUpload }}" style="margin-top:18px;background:#141414;color:#fff;border-radius:18px;padding:13px 0;text-align:center;font-size:20px;font-weight:700;cursor:pointer">更新动态 · update</div>
         <div style="margin-top:10px;font-size:14px;color:#8f8b83;text-align:center">发布后你的图鉴会收到新动态，App 用户会收到推送通知</div>
       </div>
@@ -611,22 +611,14 @@
           <div style="font-size:22px;font-weight:700">消息与通知 · inbox</div>
           <span onClick="{{ close }}" style="font-size:24px;font-weight:700;cursor:pointer">×</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
-          <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
-            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="#fff8e2" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-            <img class="asset-icon" src="./assets/catfood.png" alt="" style="width:36px;height:36px;position:relative;flex:none">
-            <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">Memw 收到新投喂</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">Mille 在咪想咖啡门口留下小鱼干</div></div>
-          </div>
-          <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
-            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="#eef4dc" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-            <img class="asset-icon" src="./assets/label.png" alt="" style="width:36px;height:36px;position:relative;flex:none">
-            <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">图鉴有新动态</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">Catt 今天 14:40 出现在车棚顶</div></div>
-          </div>
-          <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
-            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="#e8f4ff" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-            <img class="asset-icon" src="./assets/water.png" alt="" style="width:36px;height:36px;position:relative;flex:none">
-            <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">附近补水点更新</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">Riverside 新增可用水碗</div></div>
-          </div>
+        <div class="gscroll" style="display:flex;flex-direction:column;gap:10px;margin-top:12px;max-height:520px;overflow-y:auto">
+          <sc-for list="{{ notices }}" as="n" hint-placeholder-count="3">
+            <div style="position:relative;padding:12px 12px;display:flex;gap:10px;align-items:center">
+              <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 62"><rect x="2" y="2" width="196" height="58" rx="9" fill="{{ n.bg }}" stroke="#141414" stroke-width="4" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+              <img class="asset-icon" src="{{ n.iconSrc }}" alt="" style="width:36px;height:36px;position:relative;flex:none">
+              <div style="position:relative;flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.1">{{ n.title }}</div><div style="font-size:13px;color:#8f8b83;margin-top:3px">{{ n.body }}</div></div>
+            </div>
+          </sc-for>
         </div>
       </div>
     </div>
@@ -663,11 +655,13 @@ class Component extends DCLogic {
   state = {
     tab: 'map',
     view: null,           // null | inbox | pub | pet | angel | upload | recognize | newpet | pubevent | event
+    viewFrom: null,       // 记录 pet 档案的来路（如 recognize），返回时回退到它而不是直接关闭
     petId: null,
     eventId: null,
     gifted: false,
     myFeeds: 15,
     toast: '',
+    uploadNote: '',
     newPetName: '',
     newPetKind: 'cat',
     newPetTag: '野生',
@@ -684,19 +678,35 @@ class Component extends DCLogic {
     events: [
       { id:'e1', type:'丢失', title:'小白走丢了', place:'Maple St 街角', time:'2 小时前', by:'Momo', desc:'白色田园猫，戴蓝色项圈，胆子小。昨晚从 3 号楼窗户跑出去，最后出现在街角便利店附近。' },
       { id:'e2', type:'抓人', title:'花坛边有猫抓人', place:'Block A 花坛', time:'昨天', by:'楼下阿姨', desc:'花坛边的狸花最近护崽，有小朋友伸手被抓了一下。逗猫请保持距离。' }
+    ],
+    notices: [
+      { id:'n1', icon:'catfood', bg:'#fff8e2', title:'Memw 收到新投喂', body:'Mille 在咪想咖啡门口留下小鱼干', unread:false },
+      { id:'n2', icon:'label',   bg:'#eef4dc', title:'图鉴有新动态',   body:'Catt 今天 14:40 出现在车棚顶', unread:false },
+      { id:'n3', icon:'water',   bg:'#e8f4ff', title:'附近补水点更新', body:'Riverside 新增可用水碗', unread:false }
     ]
   };
 
   stop = (e) => { if (e && e.stopPropagation) e.stopPropagation(); };
-  go = (t) => this.setState({ tab: t, view: null });
-  close = () => this.setState({ view: null });
-  openPet = (id) => this.setState({ view: 'pet', petId: id, gifted: false });
-  openEvent = (id) => this.setState({ view: 'event', eventId: id });
+  go = (t) => this.setState({ tab: t, view: null, viewFrom: null });
+  close = () => {
+    const v = this.state.viewFrom;
+    // 回退一层；识别页的上一层固定是发布面板
+    this.setState({ view: v || null, viewFrom: v === 'recognize' ? 'pub' : null });
+  };
+  openEvent = (id) => this.setState({ view: 'event', eventId: id, viewFrom: null });
+  openPet = (id, from) => this.setState({
+    view: 'pet', petId: id, gifted: false, viewFrom: from || null,
+    // 点开档案即视为已读，清掉该宠物的「新动态」角标
+    pets: this.state.pets.map(p => p.id === id && p.hasUpdate ? { ...p, hasUpdate: false } : p)
+  });
   showToast = (msg) => {
     this.setState({ toast: msg });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2200);
   };
+  pushNotice = (icon, bg, title, body) => this.setState({
+    notices: [{ id: 'n' + Date.now(), icon, bg, title, body, unread: true }, ...this.state.notices]
+  });
 
   warnCopyFor(type){
     if (type === '虐猫') return '警惕：该区域出现疑似虐猫行为。请留意可疑人员，优先保证自身安全，发现时保留证据并报警。Please stay alert and call the police if needed.';
@@ -767,13 +777,17 @@ class Component extends DCLogic {
       showUpload: s.view === 'upload', showRecognize: s.view === 'recognize',
       showNewPet: s.view === 'newpet', showPubEvent: s.view === 'pubevent', showEvent: s.view === 'event',
 
-      openPub: () => this.setState({ view: 'pub' }),
-      openInbox: () => this.setState({ view: 'inbox' }),
-      goRecognize: () => this.setState({ view: 'recognize' }),
-      goPubEvent: () => this.setState({ view: 'pubevent' }),
+      openPub: () => this.setState({ view: 'pub', viewFrom: null }),
+      openInbox: () => this.setState({
+        view: 'inbox', viewFrom: null,
+        // 打开即已读
+        notices: s.notices.map(n => n.unread ? { ...n, unread: false } : n)
+      }),
+      goRecognize: () => this.setState({ view: 'recognize', viewFrom: 'pub' }),
+      goPubEvent: () => this.setState({ view: 'pubevent', viewFrom: 'pub' }),
       goNewPet: () => this.setState({ view: 'newpet' }),
-      backToRecognize: () => this.setState({ view: 'recognize' }),
-      matchKnown: () => this.openPet('cat1'),
+      backToRecognize: () => this.setState({ view: 'recognize', viewFrom: 'pub' }),
+      matchKnown: () => this.openPet('cat1', 'recognize'),
       close: this.close, stop: this.stop,
       openSettings: () => this.showToast('设置 · 含个人信息'),
 
@@ -781,17 +795,23 @@ class Component extends DCLogic {
       closeAngel: () => this.setState({ view: 'pet' }),
       gifted: s.gifted, notGifted: !s.gifted,
       giftName: current.isCat ? '小鱼干' : '小骨头',
-      giveGift: () => { this.setState({ gifted: true, myFeeds: s.myFeeds + 1 }); },
+      giveGift: () => {
+        this.setState({ gifted: true, myFeeds: this.state.myFeeds + 1 });
+        this.pushNotice(current.isCat ? 'catfood' : 'dogfood', '#fff8e2', current.en + ' 收到新礼物', 'Mille 在 ' + current.area + ' 留下' + (current.isCat ? '小鱼干' : '小骨头'));
+      },
 
       goUpload: () => this.setState({ view: 'upload' }),
       backToPet: () => this.setState({ view: 'pet' }),
+      uploadNote: s.uploadNote,
+      onUploadNote: (e) => this.setState({ uploadNote: e.target.value }),
       submitUpload: () => {
+        const entry = { t: '12:51', p: s.uploadNote ? '偶遇 · ' + s.uploadNote : '偶遇 · ' + current.area };
         this.setState({
-          view: null, tab: 'dex',
-          myFeeds: this.state.myFeeds + 1,
-          pets: this.state.pets.map(p => p.id === current.id ? { ...p, seen: p.seen + 1, hasUpdate: true } : p)
+          view: null, viewFrom: null, tab: 'dex', uploadNote: '',
+          pets: this.state.pets.map(p => p.id === current.id ? { ...p, seen: p.seen + 1, hasUpdate: true, trace: [...p.trace, entry] } : p)
         });
-        this.showToast('已更新动态，推送已发送 🐾');
+        this.pushNotice('label', '#eef4dc', '图鉴有新动态', current.en + ' 刚刚被你偶遇 · ' + current.area);
+        this.showToast('已记录相遇，点图鉴里 TA 的卡片查看 🐾');
       },
 
       newPetName: s.newPetName,
@@ -802,9 +822,10 @@ class Component extends DCLogic {
       createPet: () => {
         const id = 'new' + Date.now();
         const pet = { id, en: s.newPetName || 'Nameless', cn: '新朋友', kind: s.newPetKind, breed: s.newPetKind === 'cat' ? '狸花猫' : '小狗', tag: s.newPetTag,
-          area: '当前位置', dist: '0m', stars: 3, seen: 1, collected: true, hasUpdate: true, x: '', y: '',
+          area: '当前位置', dist: '0m', stars: 3, seen: 1, collected: true, hasUpdate: true, x: '50%', y: '40%',
           note: '刚刚建档的新朋友，欢迎来到地图！', trace: [{ t: '12:51', p: '当前位置 · 初次相遇' }] };
-        this.setState({ pets: [...this.state.pets, pet], view: 'pet', petId: id, newPetName: '' });
+        this.setState({ pets: [...this.state.pets, pet], view: 'pet', petId: id, newPetName: '', viewFrom: null });
+        this.pushNotice('label', '#eef4dc', '新宠物建档成功', pet.en + ' 已加入你的图鉴 · 当前位置');
         this.showToast('建档成功，已创建今日踪迹');
       },
 
@@ -814,11 +835,14 @@ class Component extends DCLogic {
       submitEvent: () => {
         const ev = { id: 'e' + Date.now(), type: s.eventType, title: s.eventType === '丢失' ? '宠物丢失' : s.eventType + '提醒',
           place: 'Maple St 街角', time: '刚刚', by: 'Mille', desc: s.eventDesc || '（待补充详情）' };
-        this.setState({ events: [ev, ...this.state.events], view: null, tab: 'map', eventDesc: '' });
+        this.setState({ events: [ev, ...this.state.events], view: null, viewFrom: null, tab: 'map', eventDesc: '' });
+        this.pushNotice('pin', '#fff3ee', '安全事件已发布', ev.title + ' · ' + ev.place);
         this.showToast('已发布，附近用户将收到提醒');
       },
 
       pets, collected, nearby, mapPets, events, mapEvents, current, currentEvent,
+      notices: s.notices.map(n => ({ ...n, iconSrc: './assets/' + n.icon + '.png' })),
+      inboxUnread: s.notices.some(n => n.unread),
       collectedCount: collected.length,
       nearbyCount: nearby.length,
       dexHasNews: pets.some(p => p.hasUpdate),
