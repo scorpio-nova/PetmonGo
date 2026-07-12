@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="./pet-match.js"></script>
+<!-- image-slot 用普通 script 预注册:x-import 靠 fetch 加载,file:// 下会失败导致上传框点不动 -->
+<script src="./image-slot.js"></script>
 </head>
 <body>
 <x-dc>
@@ -470,14 +473,29 @@
         </div>
 
         <div style="margin-top:18px;font-size:18px;font-weight:700">识别结果 · match</div>
-        <div onClick="{{ matchKnown }}" style="position:relative;margin-top:8px;padding:14px 16px;cursor:pointer">
-          <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 80"><rect x="2" y="2" width="196" height="76" rx="10" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-          <div style="position:relative;display:flex;align-items:center;gap:12px">
-            <svg style="width:46px;height:46px;flex:none;color:#b9b9b9"><use href="#c-cat"/></svg>
-            <div style="flex:1"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:20px;font-weight:700">Catt</span><span style="font-size:15px;color:#8f8b83">橘座</span></div><div style="font-size:14px;color:#8f8b83">相似度 89% · Block A 小区</div></div>
-            <span style="font-size:15px;font-weight:700;background:#141414;color:#fff;border-radius:10px;padding:3px 12px">是 TA</span>
+
+        <sc-if value="{{ matchIdle }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:8px;font-size:15px;color:#8f8b83">放入照片后自动识别 · drop a photo above</div>
+        </sc-if>
+        <sc-if value="{{ matchBusy }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:8px;font-size:15px;color:#8f8b83">识别中… 首次使用需下载模型（约 30MB），请稍候</div>
+        </sc-if>
+        <sc-if value="{{ matchFailed }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:8px;font-size:15px;color:#b3261e">识别失败：{{ matchErrorText }}</div>
+        </sc-if>
+
+        <sc-for list="{{ matchList }}" as="m" hint-placeholder-count="1">
+          <div onClick="{{ m.openThis }}" style="position:relative;margin-top:8px;padding:14px 16px;cursor:pointer">
+            <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 80"><rect x="2" y="2" width="196" height="76" rx="10" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+            <div style="position:relative;display:flex;align-items:center;gap:12px">
+              <sc-if value="{{ m.isAngel }}" hint-placeholder-val="{{ false }}"><svg style="width:46px;height:46px;flex:none;color:{{ m.bodyColor }}"><use href="#c-angel"/></svg></sc-if>
+              <sc-if value="{{ m.plainCat }}" hint-placeholder-val="{{ true }}"><svg style="width:46px;height:46px;flex:none;color:{{ m.bodyColor }}"><use href="#c-cat"/></svg></sc-if>
+              <sc-if value="{{ m.plainDog }}" hint-placeholder-val="{{ false }}"><svg style="width:46px;height:46px;flex:none;color:{{ m.bodyColor }}"><use href="#c-dog"/></svg></sc-if>
+              <div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:20px;font-weight:700">{{ m.en }}</span><span style="font-size:15px;color:#8f8b83">{{ m.cn }}</span></div><div style="font-size:14px;color:#8f8b83">{{ m.sub }}</div></div>
+              <span style="font-size:15px;font-weight:700;background:#141414;color:#fff;border-radius:10px;padding:3px 12px;white-space:nowrap">{{ m.act }}</span>
+            </div>
           </div>
-        </div>
+        </sc-for>
 
         <div onClick="{{ goNewPet }}" style="position:relative;margin-top:12px;padding:14px 16px;cursor:pointer">
           <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="none" viewBox="0 0 200 60"><rect x="2" y="2" width="196" height="56" rx="10" fill="#eef4dc" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)" stroke-dasharray="10 7"/></svg>
@@ -673,6 +691,9 @@ class Component extends DCLogic {
     newPetTag: '野生',
     eventType: '丢失',
     eventDesc: '',
+    matchStatus: 'idle',   // idle | busy | done | error
+    matchResults: [],      // [{petId, score, file}] 来自 petMatch.match
+    matchError: '',
     pets: [
       { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', breed:'奶牛猫', tag:'野生', area:'Block A 小区', dist:'40m',  stars:4, seen:105, collected:true, x:'76%', y:'26%', note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
       { id:'cat2', en:'Memw', cn:'奶盖', kind:'cat', breed:'三花猫', tag:'家养', area:'Maple St 街', dist:'120m', stars:4, seen:76,  collected:true, x:'24%', y:'62%', note:'见人就翻肚皮的社交悍匪，散养中。', trace:[{t:'09:10',p:'自家窗台'},{t:'13:30',p:'咪想咖啡门口'}] },
@@ -689,6 +710,37 @@ class Component extends DCLogic {
 
   stop = (e) => { if (e && e.stopPropagation) e.stopPropagation(); };
   go = (t) => this.setState({ tab: t, view: null });
+
+  // ── 拍照识别:侦测 camera-shot 槽的图片,喂给 petMatch(CLIP)──
+  // image-slot 放图后没有对外事件,轮询其 shadow img 的 src 变化。
+  componentDidMount(){
+    this._shotTimer = setInterval(() => this.checkShot(), 600);
+  }
+  componentWillUnmount(){ clearInterval(this._shotTimer); }
+  checkShot = () => {
+    if (this.state.view !== 'recognize' || !window.petMatch) return;
+    // 进识别页就预热模型(下载 + 初始化),用户放图时基本就绪
+    if (!this._warmed) { this._warmed = true; window.petMatch.ensure().catch(() => { this._warmed = false; }); }
+    const el = document.getElementById('camera-shot');
+    const img = el && el.shadowRoot && el.shadowRoot.querySelector('.frame img');
+    const src = (img && el.hasAttribute('data-filled') && !el.hasAttribute('data-swapping'))
+      ? img.getAttribute('src') : '';
+    if (!src || src === this._lastShot) return;
+    this._lastShot = src;
+    this.runMatch(src);
+  };
+  runMatch = async (src) => {
+    this.setState({ matchStatus: 'busy', matchError: '', matchResults: [] });
+    try {
+      const results = await window.petMatch.match(src);
+      if (this._lastShot !== src) return; // 期间换了图,丢弃旧结果
+      this.setState({ matchStatus: 'done', matchResults: results.slice(0, 3) });
+    } catch (e) {
+      if (this._lastShot !== src) return;
+      this.setState({ matchStatus: 'error', matchError: String((e && e.message) || e) });
+    }
+  };
+
   close = () => this.setState({ view: null });
   openPet = (id) => this.setState({ view: 'pet', petId: id, gifted: false });
   openEvent = (id) => this.setState({ view: 'event', eventId: id });
@@ -769,11 +821,21 @@ class Component extends DCLogic {
 
       openPub: () => this.setState({ view: 'pub' }),
       openInbox: () => this.setState({ view: 'inbox' }),
-      goRecognize: () => this.setState({ view: 'recognize' }),
+      goRecognize: () => { this._lastShot = ''; this.setState({ view: 'recognize', matchStatus: 'idle', matchResults: [], matchError: '' }); },
       goPubEvent: () => this.setState({ view: 'pubevent' }),
       goNewPet: () => this.setState({ view: 'newpet' }),
       backToRecognize: () => this.setState({ view: 'recognize' }),
-      matchKnown: () => this.openPet('cat1'),
+
+      // 识别结果:matchResults 里的 petId 关联图鉴宠物;不在图鉴的(图库散图)也展示,给建档入口
+      matchIdle: s.matchStatus === 'idle', matchBusy: s.matchStatus === 'busy',
+      matchFailed: s.matchStatus === 'error', matchErrorText: s.matchError,
+      matchList: s.matchResults.map((r, i) => {
+        const pet = pets.find(p => p.id === r.petId);
+        const pct = Math.round(r.score * 100) + '%';
+        if (pet) return { ...pet, sub: '相似度 ' + pct + ' · ' + pet.area, act: i === 0 ? '是 TA' : '也像', openThis: () => this.openPet(pet.id) };
+        return { en: r.petId.replace(/^\d+_/, '').slice(0, 10), cn: '未收录', plainCat: true, plainDog: false, isAngel: false, bodyColor: '#b9b9b9',
+          sub: '相似度 ' + pct + ' · 图库照片', act: '去建档', openThis: () => this.setState({ view: 'newpet' }) };
+      }),
       close: this.close, stop: this.stop,
       openSettings: () => this.showToast('设置 · 含个人信息'),
 
