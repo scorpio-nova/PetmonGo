@@ -14,7 +14,13 @@ window.petMatch = (() => {
   const LIB = './petlib/';
   const CDN = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
   // 图库文件名前缀 -> app 内 state.pets 的 id
-  const ID_MAP = { catt: 'cat1', memw: 'cat2', dada: 'dog1', onion: 'cat3', scar: 'cat4', mochi: 'cat5' };
+  const ID_MAP = {
+    catt: 'cat1', memw: 'cat2', dada: 'dog1', onion: 'cat3', scar: 'cat4', mochi: 'cat5',
+    '02_pin7011961860': 'cat6',  '19_pin6780225098': 'cat7',  '21_pin7032012205': 'cat8',
+    '22_pin7030436621': 'cat9',  '23_pin3860038557': 'cat10', '26_pin5120886183': 'cat11',
+    '27_pin7018578576': 'cat12', '30_pin5623092788': 'dog2',  '36_pin5157752165': 'dog3',
+    '42_pin7032488465': 'cat13', '46_pin2911788931': 'cat14', '48_pin3568876602': 'cat15',
+  };
 
   let ready = null;
 
