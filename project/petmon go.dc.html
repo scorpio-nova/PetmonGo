@@ -386,7 +386,10 @@
           <div style="display:flex;justify-content:center;margin-top:6px">
             <div style="position:relative;width:210px;height:190px;padding:8px">
               <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2" preserveAspectRatio="none" viewBox="0 0 100 100"><rect x="3" y="3" width="94" height="94" rx="9" fill="none" stroke="#141414" stroke-width="7" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-              <div style="position:absolute;inset:8px;border-radius:6px;overflow:hidden"><x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ current.photoId }}" shape="rect" placeholder="偶遇照片" hint-size="100%,100%"></x-import></div>
+              <div style="position:absolute;inset:8px;border-radius:6px;overflow:hidden">
+                <sc-if value="{{ current.hasPhoto }}" hint-placeholder-val="{{ true }}"><img src="{{ current.photo }}" alt="{{ current.en }}" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if>
+                <sc-if value="{{ current.noPhoto }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ current.photoId }}" shape="rect" placeholder="偶遇照片" hint-size="100%,100%"></x-import></sc-if>
+              </div>
             </div>
           </div>
 
@@ -709,21 +712,21 @@ class Component extends DCLogic {
     pets: [
       { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', breed:'奶牛猫', tag:'野生', area:'Block A 小区', xy:[76,26], stars:4, seen:105, collected:true, note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
       { id:'cat2', en:'Memw', cn:'奶盖', kind:'cat', breed:'三花猫', tag:'家养', area:'Maple St 街', xy:[24,62], stars:4, seen:76,  collected:true, note:'见人就翻肚皮的社交悍匪，散养中。', trace:[{t:'09:10',p:'自家窗台'},{t:'13:30',p:'咪想咖啡门口'}] },
-      { id:'dog1', en:'Dada', cn:'旺仔', kind:'dog', breed:'小狗', tag:'家养', area:'Riverside 河边', xy:[72,82], stars:3, seen:35, collected:true, note:'河边散步搭子，尾巴摇成螺旋桨。', trace:[{t:'07:40',p:'河边晨跑'},{t:'16:00',p:'停狗处等主人'}] },
+      { id:'dog1', en:'Dada', cn:'旺仔', kind:'dog', breed:'小狗', tag:'家养', area:'Riverside 河边', xy:[118,128], stars:3, seen:35, collected:true, note:'河边散步搭子，尾巴摇成螺旋桨。', trace:[{t:'07:40',p:'河边晨跑'},{t:'16:00',p:'停狗处等主人'}] },
       { id:'cat3', en:'Onion', cn:'洋葱头', kind:'cat', breed:'狸花猫', tag:'野生', area:'便利店', xy:[118,36], stars:3, seen:35, collected:true, note:'躲在纸箱里，以为纸箱是隐身的。', trace:[{t:'11:00',p:'便利店纸箱'}] },
       { id:'cat4', en:'Scar', cn:'刀疤', kind:'cat', breed:'天使猫', tag:'天使', area:'老槐树下', xy:null, stars:5, seen:120, collected:true, note:'街区传奇。去年冬天去了喵星，大家还在老地方给它留吃的。', trace:[] },
       { id:'cat5', en:'Mochi', cn:'小萌萌', kind:'cat', breed:'奶牛猫', tag:'野生', area:'公园', xy:[12,112], stars:3, seen:14, collected:true, note:'小小的，圆圆的，一天睡 20 个小时。', trace:[{t:'10:20',p:'公园长椅下'}] },
-      { id:'cat6',  en:'Patch',  cn:'补丁',   kind:'cat', breed:'三花猫', tag:'野生', area:'街心公园', xy:[40,18], stars:3, seen:22, collected:false, note:'总在路沿石上坐岗，盯着灌木丛发呆。', trace:[{t:'09:30',p:'公园路沿石站岗'}] },
-      { id:'cat7',  en:'Drama',  cn:'戏精',   kind:'cat', breed:'三花猫', tag:'野生', area:'Block B 后巷', xy:[58,50], stars:4, seen:41, collected:false, note:'嗓门全街区第一，见人先嚎一嗓子再蹭腿。', trace:[{t:'08:00',p:'后巷墙根晨间演出'}] },
+      { id:'cat6',  en:'Patch',  cn:'补丁',   kind:'cat', breed:'三花猫', tag:'野生', area:'街心公园', xy:[35,-48], stars:3, seen:22, collected:false, note:'总在路沿石上坐岗，盯着灌木丛发呆。', trace:[{t:'09:30',p:'公园路沿石站岗'}] },
+      { id:'cat7',  en:'Drama',  cn:'戏精',   kind:'cat', breed:'三花猫', tag:'野生', area:'Block B 后巷', xy:[140,54], stars:4, seen:41, collected:false, note:'嗓门全街区第一，见人先嚎一嗓子再蹭腿。', trace:[{t:'08:00',p:'后巷墙根晨间演出'}] },
       { id:'cat8',  en:'Bean',   cn:'豆豆',   kind:'cat', breed:'奶牛猫', tag:'野生', area:'工地空地', xy:[130,80], stars:2, seen:6,  collected:false, note:'巴掌大的小奶猫，走两步埋头闻半天。', trace:[{t:'15:10',p:'空地土路学步'}] },
-      { id:'cat9',  en:'Fluffy', cn:'蓬蓬',   kind:'cat', breed:'长毛猫', tag:'家养', area:'Maple St 街', xy:[18,40], stars:4, seen:58, collected:false, note:'马路中央四脚朝天，毛量遮住半条街。', trace:[{t:'13:00',p:'柏油路打滚晒肚皮'}] },
+      { id:'cat9',  en:'Fluffy', cn:'蓬蓬',   kind:'cat', breed:'长毛猫', tag:'家养', area:'Maple St 街', xy:[-48,34], stars:4, seen:58, collected:false, note:'马路中央四脚朝天，毛量遮住半条街。', trace:[{t:'13:00',p:'柏油路打滚晒肚皮'}] },
       { id:'cat10', en:'Latte',  cn:'拿铁',   kind:'cat', breed:'橘白猫', tag:'野生', area:'社区草坪', xy:[-18,60], stars:3, seen:19, collected:false, note:'一脸不高兴是天生的，其实脾气很好。', trace:[{t:'11:20',p:'草坪蹲坐嫌弃路人'}] },
       { id:'cat11', en:'Hunter', cn:'猎手',   kind:'cat', breed:'三花猫', tag:'野生', area:'农田边', xy:[150,140], stars:5, seen:12, collected:false, note:'街区捕鼠冠军，战利品从不离口。', trace:[{t:'17:40',p:'田埂叼着战利品巡街'}] },
       { id:'cat12', en:'Cocoa',  cn:'可可',   kind:'cat', breed:'长毛猫', tag:'野生', area:'河堤草丛', xy:[95,130], stars:3, seen:9,  collected:false, note:'一身巧克力色，逆光时眼睛亮得像两盏灯。', trace:[{t:'16:30',p:'草丛里回头杀'}] },
       { id:'dog2',  en:'Curly',  cn:'卷卷',   kind:'dog', breed:'可卡犬', tag:'家养', area:'Block A 小区', xy:[82,64], stars:4, seen:47, collected:false, note:'一头大波浪，踩完花坛回家蹭沙发。', trace:[{t:'10:00',p:'小区楼下遛弯'}] },
-      { id:'dog3',  en:'Oreo',   cn:'奥利奥', kind:'dog', breed:'边牧', tag:'家养', area:'Riverside 河边', xy:[66,74], stars:5, seen:63, collected:false, note:'全小区最聪明的狗，掉毛量也是第一名。', trace:[{t:'07:30',p:'河边接飞盘'}] },
+      { id:'dog3',  en:'Oreo',   cn:'奥利奥', kind:'dog', breed:'边牧', tag:'家养', area:'Riverside 河边', xy:[128,116], stars:5, seen:63, collected:false, note:'全小区最聪明的狗，掉毛量也是第一名。', trace:[{t:'07:30',p:'河边接飞盘'}] },
       { id:'cat13', en:'Amber',  cn:'琥珀',   kind:'cat', breed:'玳瑁猫', tag:'野生', area:'墙根小院', xy:[-30,10], stars:3, seen:16, collected:false, note:'墙角打滚专业户，肚皮可看不可摸。', trace:[{t:'14:20',p:'墙根草边翻滚'}] },
-      { id:'cat14', en:'Disco',  cn:'迪斯科', kind:'cat', breed:'橘猫', tag:'野生', area:'林荫道', xy:[30,30], stars:4, seen:33, collected:false, note:'会站起来跳舞的橘猫，落叶season限定演出。', trace:[{t:'15:50',p:'林荫道单手摘星'}] },
+      { id:'cat14', en:'Disco',  cn:'迪斯科', kind:'cat', breed:'橘猫', tag:'野生', area:'林荫道', xy:[-38,-28], stars:4, seen:33, collected:false, note:'会站起来跳舞的橘猫，落叶season限定演出。', trace:[{t:'15:50',p:'林荫道单手摘星'}] },
       { id:'cat15', en:'Kungfu', cn:'功夫',   kind:'cat', breed:'狸花猫', tag:'野生', area:'码头', xy:[160,90], stars:4, seen:28, collected:false, note:'黄昏码头站桩练拳，疑似猫界宗师。', trace:[{t:'18:10',p:'码头夕阳下出拳'}] }
     ],
     events: [
@@ -832,7 +835,15 @@ class Component extends DCLogic {
   // (<0 或 >100),表示在当前地图视野之外——有距离、可进列表,但不出 pin。
   static ME = [44, 47];
   static SCALE_M = 8;
-  static NEARBY_M = 500;
+  static NEARBY_M = 900;
+
+  // petId -> petlib 图库真实照片(档案页展示用);用户新建档的宠物不在此表,回退上传槽
+  static PHOTO = {
+    cat1:'catt-1.jpg', cat2:'memw-2.jpg', cat3:'onion-1.jpg', cat4:'scar-1.jpg', cat5:'mochi-1.jpg', dog1:'dada-1.jpg',
+    cat6:'02_pin7011961860.jpg', cat7:'19_pin6780225098.jpg', cat8:'21_pin7032012205.jpg', cat9:'22_pin7030436621.jpg',
+    cat10:'23_pin3860038557.jpg', cat11:'26_pin5120886183.jpg', cat12:'27_pin7018578576.jpg', dog2:'30_pin5623092788.jpg',
+    dog3:'36_pin5157752165.jpg', cat13:'42_pin7032488465.jpg', cat14:'46_pin2911788931.jpg', cat15:'48_pin3568876602.jpg'
+  };
 
   distanceM(a){
     if (!a.xy) return null; // 无坐标(如天使宠物)不参与定位
@@ -853,6 +864,8 @@ class Component extends DCLogic {
       isCat, isDog: !isCat, isAngel, notAngel: !isAngel,
       plainCat: isCat && !isAngel, plainDog: !isCat && !isAngel,
       photoId: 'photo-' + a.id,
+      photo: Component.PHOTO[a.id] ? './petlib/' + Component.PHOTO[a.id] : '',
+      hasPhoto: !!Component.PHOTO[a.id], noPhoto: !Component.PHOTO[a.id],
       cardFill: isAngel ? '#fff8e2' : '#fff',
       // 天使/纪念框：黑线本身改成彩虹渐变（不再用边缘辉光）
       frameStroke: isAngel ? 'url(#rainbow)' : '#141414',
