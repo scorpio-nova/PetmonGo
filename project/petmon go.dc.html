@@ -708,6 +708,7 @@ class Component extends DCLogic {
     matchStatus: 'idle',   // idle | busy | done | error
     matchResults: [],      // [{petId, score, file}] 来自 petMatch.match
     matchError: '',
+    shotSrc: '',           // 识别页刚拍的那张图(dataURL);建档/确认是TA 时复用,避免重复上传
     openCluster: null,     // 展开中的地图聚合 pin 的 key(成员 id 排序拼接)
     pets: [
       { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', breed:'奶牛猫', tag:'野生', area:'Block A 小区', xy:[76,26], stars:4, seen:105, collected:true, note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
@@ -762,7 +763,8 @@ class Component extends DCLogic {
     this.runMatch(src);
   };
   runMatch = async (src) => {
-    this.setState({ matchStatus: 'busy', matchError: '', matchResults: [] });
+    // src 是拍摄图的 dataURL(image-slot 输出 webp dataURL);记下来供建档/确认是TA 复用
+    this.setState({ matchStatus: 'busy', matchError: '', matchResults: [], shotSrc: src });
     try {
       const results = await window.petMatch.match(src);
       if (this._lastShot !== src) return; // 期间换了图,丢弃旧结果
@@ -771,6 +773,20 @@ class Component extends DCLogic {
       if (this._lastShot !== src) return;
       this.setState({ matchStatus: 'error', matchError: String((e && e.message) || e) });
     }
+  };
+
+  // 识别页点某条匹配结果 = 确认「就是这只已有档案的猫」:
+  // 用刚拍的照片替换档案里的图片,并记一次偶遇(收集),然后打开档案。
+  confirmMatch = (id) => {
+    const shot = this.state.shotSrc;
+    const entry = { t: '12:51', p: '偶遇 · 拍照识别' };
+    this.setState({
+      pets: this.state.pets.map(p => p.id === id
+        ? { ...p, userPhoto: shot || p.userPhoto, collected: true, seen: p.seen + 1, trace: [...p.trace, entry] }
+        : p),
+      view: 'pet', petId: id, viewFrom: 'recognize', gifted: false, shotSrc: ''
+    });
+    this.showToast(shot ? '已确认是 TA，照片已更新到档案 🐾' : '已确认是 TA 🐾');
   };
 
   close = () => {
@@ -856,6 +872,8 @@ class Component extends DCLogic {
     const visual = this.petVisual(a);
     const distM = this.distanceM(a);
     const onMap = !!a.xy && a.xy[0] >= 0 && a.xy[0] <= 100 && a.xy[1] >= 0 && a.xy[1] <= 100;
+    // 档案照片:用户拍照识别时存下的 userPhoto 优先,其次图库预置照片,都没有才回退上传槽
+    const petPhoto = a.userPhoto || (Component.PHOTO[a.id] ? './petlib/' + Component.PHOTO[a.id] : '');
     return { ...a, ...visual,
       distM,
       isNearby: distM !== null && distM <= Component.NEARBY_M,
@@ -864,8 +882,8 @@ class Component extends DCLogic {
       isCat, isDog: !isCat, isAngel, notAngel: !isAngel,
       plainCat: isCat && !isAngel, plainDog: !isCat && !isAngel,
       photoId: 'photo-' + a.id,
-      photo: Component.PHOTO[a.id] ? './petlib/' + Component.PHOTO[a.id] : '',
-      hasPhoto: !!Component.PHOTO[a.id], noPhoto: !Component.PHOTO[a.id],
+      photo: petPhoto,
+      hasPhoto: !!petPhoto, noPhoto: !petPhoto,
       cardFill: isAngel ? '#fff8e2' : '#fff',
       // 天使/纪念框：黑线本身改成彩虹渐变（不再用边缘辉光）
       frameStroke: isAngel ? 'url(#rainbow)' : '#141414',
@@ -934,7 +952,7 @@ class Component extends DCLogic {
         // 打开即已读
         notices: s.notices.map(n => n.unread ? { ...n, unread: false } : n)
       }),
-      goRecognize: () => { this._lastShot = ''; this.setState({ view: 'recognize', viewFrom: 'pub', matchStatus: 'idle', matchResults: [], matchError: '' }); },
+      goRecognize: () => { this._lastShot = ''; this.setState({ view: 'recognize', viewFrom: 'pub', matchStatus: 'idle', matchResults: [], matchError: '', shotSrc: '' }); },
       goPubEvent: () => this.setState({ view: 'pubevent', viewFrom: 'pub' }),
       goNewPet: () => this.setState({ view: 'newpet' }),
       backToRecognize: () => this.setState({ view: 'recognize', viewFrom: 'pub' }),
@@ -945,7 +963,7 @@ class Component extends DCLogic {
       matchList: s.matchResults.map((r, i) => {
         const pet = pets.find(p => p.id === r.petId);
         const pct = Math.round(r.score * 100) + '%';
-        if (pet) return { ...pet, sub: '相似度 ' + pct + ' · ' + pet.area, act: i === 0 ? '是 TA' : '也像', openThis: () => this.openPet(pet.id, 'recognize') };
+        if (pet) return { ...pet, sub: '相似度 ' + pct + ' · ' + pet.area, act: i === 0 ? '是 TA' : '也像', openThis: () => this.confirmMatch(pet.id) };
         return { en: r.petId.replace(/^\d+_/, '').slice(0, 10), cn: '未收录', plainCat: true, plainDog: false, isAngel: false, bodyColor: '#b9b9b9',
           sub: '相似度 ' + pct + ' · 图库照片', act: '去建档', openThis: () => this.setState({ view: 'newpet' }) };
       }),
@@ -984,8 +1002,9 @@ class Component extends DCLogic {
         const id = 'new' + Date.now();
         const pet = { id, en: s.newPetName || 'Nameless', cn: '新朋友', kind: s.newPetKind, breed: s.newPetKind === 'cat' ? '狸花猫' : '小狗', tag: s.newPetTag,
           area: '当前位置', xy: [Component.ME[0], Component.ME[1]], stars: 3, seen: 1, collected: true, hasUpdate: true,
+          userPhoto: s.shotSrc || '',   // 识别页拍的那张图直接进档案,不用在档案里再传一次
           note: '刚刚建档的新朋友，欢迎来到地图！', trace: [{ t: '12:51', p: '当前位置 · 初次相遇' }] };
-        this.setState({ pets: [...this.state.pets, pet], view: 'pet', petId: id, newPetName: '', viewFrom: null });
+        this.setState({ pets: [...this.state.pets, pet], view: 'pet', petId: id, newPetName: '', viewFrom: null, shotSrc: '' });
         this.pushNotice('label', '#eef4dc', '新宠物建档成功', pet.en + ' 已加入你的图鉴 · 当前位置');
         this.showToast('建档成功，已创建今日踪迹');
       },
