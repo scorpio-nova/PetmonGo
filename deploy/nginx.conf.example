@@ -1,0 +1,41 @@
+# Petmon Go —— 二级域名 petmongo.softlanding.com.cn 站点配置
+# 放到 /etc/nginx/conf.d/petmongo.conf,然后 nginx -t && systemctl reload nginx
+#
+# 说明:
+# - 纯静态站,root 直接指向仓库工作区的 project 目录(deploy.sh 会在这里生成 index.html)。
+# - .wasm / .onnx 需要正确 MIME,否则浏览器里的 CLIP 模型加载会失败(自托管模型后必需)。
+
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name petmongo.softlanding.com.cn;
+
+    # 上了 HTTPS 后打开这段,把 80 全量跳 443
+    # return 301 https://$host$request_uri;
+
+    root  /var/www/petmon-go/repo/project;
+    index index.html;
+
+    # 单页应用:找不到的路径回落到入口
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 模型 / 运行时:大文件长缓存 + 正确 MIME
+    types {
+        application/wasm            wasm;
+        application/octet-stream    onnx;
+    }
+    location ~* \.(wasm|onnx|json)$ {
+        add_header Cache-Control "public, max-age=604800";
+        try_files $uri =404;
+    }
+
+    # 图库图片等静态资源缓存
+    location ~* \.(jpg|jpeg|png|webp|svg|js|css)$ {
+        add_header Cache-Control "public, max-age=86400";
+    }
+
+    access_log /var/log/nginx/petmongo.access.log;
+    error_log  /var/log/nginx/petmongo.error.log;
+}
