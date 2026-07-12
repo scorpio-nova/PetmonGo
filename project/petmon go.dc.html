@@ -146,7 +146,22 @@
             </div>
           </sc-for>
 
-          <!-- SAFETY EVENT PINS -->
+          <!-- CLUSTER BUBBLES:折叠的一撮毛孩子;点开扇形散开(成员 pin 走上面的 mapPets),再点收起 -->
+          <sc-for list="{{ mapClusters }}" as="c" hint-placeholder-count="1">
+            <div onClick="{{ c.toggle }}" style="position:absolute;left:{{ c.x }};top:{{ c.y }};transform:translate(-50%,-50%);cursor:pointer;display:flex;flex-direction:column;align-items:center;z-index:4">
+              <sc-if value="{{ c.closed }}" hint-placeholder-val="{{ true }}">
+                <div style="position:relative;width:58px;height:58px;display:flex;align-items:center;justify-content:center;animation:gfloat 4.5s ease-in-out infinite">
+                  <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#fff" stroke="#141414" stroke-width="6" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
+                  <svg style="width:30px;height:30px;position:relative;color:#b3874e"><use href="#c-cat"/></svg>
+                  <span style="position:absolute;top:-6px;right:-6px;min-width:24px;height:24px;border-radius:12px;background:#141414;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px">{{ c.count }}</span>
+                </div>
+                <span style="font-size:12px;font-weight:700;background:#fff;padding:0 6px;border:2px solid #141414;border-radius:8px;margin-top:2px">一撮毛孩子</span>
+              </sc-if>
+              <sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
+                <div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:2.5px solid #141414;border-radius:50%;background:#141414;color:#fff;font-size:18px;font-weight:700">×</div>
+              </sc-if>
+            </div>
+          </sc-for>
           <sc-for list="{{ mapEvents }}" as="e" hint-placeholder-count="1">
             <div onClick="{{ e.openThis }}" style="position:absolute;left:{{ e.x }};top:{{ e.y }};transform:translate(-50%,-50%);cursor:pointer;display:flex;flex-direction:column;align-items:center;z-index:3">
               <svg style="width:42px;height:38px"><use href="#c-warn"/></svg>
@@ -200,7 +215,7 @@
         <div>
           <div style="font-size:20px;font-weight:700;margin-bottom:8px">附近宠物 · pets nearby</div>
           <div class="gscroll" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px">
-            <sc-for list="{{ collected }}" as="a" hint-placeholder-count="5">
+            <sc-for list="{{ nearby }}" as="a" hint-placeholder-count="5">
               <div onClick="{{ a.openThis }}" style="flex:none;width:96px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer">
                 <div style="position:relative;width:84px;height:84px;display:flex;align-items:center;justify-content:center">
                   <svg style="position:absolute;inset:0;width:100%;height:100%" preserveAspectRatio="none" viewBox="0 0 100 100"><rect x="5" y="5" width="90" height="90" rx="26" fill="#fff" stroke="#141414" stroke-width="5" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
@@ -371,7 +386,10 @@
           <div style="display:flex;justify-content:center;margin-top:6px">
             <div style="position:relative;width:210px;height:190px;padding:8px">
               <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2" preserveAspectRatio="none" viewBox="0 0 100 100"><rect x="3" y="3" width="94" height="94" rx="9" fill="none" stroke="#141414" stroke-width="7" vector-effect="non-scaling-stroke" filter="url(#pen2)"/></svg>
-              <div style="position:absolute;inset:8px;border-radius:6px;overflow:hidden"><x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ current.photoId }}" shape="rect" placeholder="偶遇照片" hint-size="100%,100%"></x-import></div>
+              <div style="position:absolute;inset:8px;border-radius:6px;overflow:hidden">
+                <sc-if value="{{ current.hasPhoto }}" hint-placeholder-val="{{ true }}"><img src="{{ current.photo }}" alt="{{ current.en }}" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if>
+                <sc-if value="{{ current.noPhoto }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ current.photoId }}" shape="rect" placeholder="偶遇照片" hint-size="100%,100%"></x-import></sc-if>
+              </div>
             </div>
           </div>
 
@@ -690,13 +708,26 @@ class Component extends DCLogic {
     matchStatus: 'idle',   // idle | busy | done | error
     matchResults: [],      // [{petId, score, file}] 来自 petMatch.match
     matchError: '',
+    openCluster: null,     // 展开中的地图聚合 pin 的 key(成员 id 排序拼接)
     pets: [
-      { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', breed:'奶牛猫', tag:'野生', area:'Block A 小区', dist:'40m',  stars:4, seen:105, collected:true, x:'76%', y:'26%', note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
-      { id:'cat2', en:'Memw', cn:'奶盖', kind:'cat', breed:'三花猫', tag:'家养', area:'Maple St 街', dist:'120m', stars:4, seen:76,  collected:true, x:'24%', y:'62%', note:'见人就翻肚皮的社交悍匪，散养中。', trace:[{t:'09:10',p:'自家窗台'},{t:'13:30',p:'咪想咖啡门口'}] },
-      { id:'dog1', en:'Dada', cn:'旺仔', kind:'dog', breed:'小狗', tag:'家养', area:'Riverside 河边', dist:'210m', stars:3, seen:35, collected:true, x:'72%', y:'82%', note:'河边散步搭子，尾巴摇成螺旋桨。', trace:[{t:'07:40',p:'河边晨跑'},{t:'16:00',p:'停狗处等主人'}] },
-      { id:'cat3', en:'Onion', cn:'洋葱头', kind:'cat', breed:'狸花猫', tag:'野生', area:'便利店', dist:'', stars:3, seen:35, collected:true, x:'', y:'', note:'躲在纸箱里，以为纸箱是隐身的。', trace:[{t:'11:00',p:'便利店纸箱'}] },
-      { id:'cat4', en:'Scar', cn:'刀疤', kind:'cat', breed:'天使猫', tag:'天使', area:'老槐树下', dist:'', stars:5, seen:120, collected:true, x:'', y:'', note:'街区传奇。去年冬天去了喵星，大家还在老地方给它留吃的。', trace:[] },
-      { id:'cat5', en:'Mochi', cn:'小萌萌', kind:'cat', breed:'奶牛猫', tag:'野生', area:'公园', dist:'', stars:3, seen:14, collected:true, x:'', y:'', note:'小小的，圆圆的，一天睡 20 个小时。', trace:[{t:'10:20',p:'公园长椅下'}] }
+      { id:'cat1', en:'Catt', cn:'橘座', kind:'cat', breed:'奶牛猫', tag:'野生', area:'Block A 小区', xy:[76,26], stars:4, seen:105, collected:true, note:'高冷贵族，只在午后的花坛边营业。', trace:[{t:'08:20',p:'花坛边晒太阳'},{t:'12:05',p:'便利店门口讨吃的'},{t:'14:40',p:'车棚顶上睡觉'}] },
+      { id:'cat2', en:'Memw', cn:'奶盖', kind:'cat', breed:'三花猫', tag:'家养', area:'Maple St 街', xy:[24,62], stars:4, seen:76,  collected:true, note:'见人就翻肚皮的社交悍匪，散养中。', trace:[{t:'09:10',p:'自家窗台'},{t:'13:30',p:'咪想咖啡门口'}] },
+      { id:'dog1', en:'Dada', cn:'旺仔', kind:'dog', breed:'小狗', tag:'家养', area:'Riverside 河边', xy:[118,128], stars:3, seen:35, collected:true, note:'河边散步搭子，尾巴摇成螺旋桨。', trace:[{t:'07:40',p:'河边晨跑'},{t:'16:00',p:'停狗处等主人'}] },
+      { id:'cat3', en:'Onion', cn:'洋葱头', kind:'cat', breed:'狸花猫', tag:'野生', area:'便利店', xy:[118,36], stars:3, seen:35, collected:true, note:'躲在纸箱里，以为纸箱是隐身的。', trace:[{t:'11:00',p:'便利店纸箱'}] },
+      { id:'cat4', en:'Scar', cn:'刀疤', kind:'cat', breed:'天使猫', tag:'天使', area:'老槐树下', xy:[50,22], stars:5, seen:120, collected:true, note:'街区传奇。去年冬天去了喵星，大家还在老地方给它留吃的。', trace:[] },
+      { id:'cat5', en:'Mochi', cn:'小萌萌', kind:'cat', breed:'奶牛猫', tag:'野生', area:'公园', xy:[12,112], stars:3, seen:14, collected:true, note:'小小的，圆圆的，一天睡 20 个小时。', trace:[{t:'10:20',p:'公园长椅下'}] },
+      { id:'cat6',  en:'Patch',  cn:'补丁',   kind:'cat', breed:'三花猫', tag:'野生', area:'街心公园', xy:[35,-48], stars:3, seen:22, collected:false, note:'总在路沿石上坐岗，盯着灌木丛发呆。', trace:[{t:'09:30',p:'公园路沿石站岗'}] },
+      { id:'cat7',  en:'Drama',  cn:'戏精',   kind:'cat', breed:'三花猫', tag:'野生', area:'Block B 后巷', xy:[140,54], stars:4, seen:41, collected:false, note:'嗓门全街区第一，见人先嚎一嗓子再蹭腿。', trace:[{t:'08:00',p:'后巷墙根晨间演出'}] },
+      { id:'cat8',  en:'Bean',   cn:'豆豆',   kind:'cat', breed:'奶牛猫', tag:'野生', area:'工地空地', xy:[130,80], stars:2, seen:6,  collected:false, note:'巴掌大的小奶猫，走两步埋头闻半天。', trace:[{t:'15:10',p:'空地土路学步'}] },
+      { id:'cat9',  en:'Fluffy', cn:'蓬蓬',   kind:'cat', breed:'长毛猫', tag:'家养', area:'Maple St 街', xy:[-48,34], stars:4, seen:58, collected:false, note:'马路中央四脚朝天，毛量遮住半条街。', trace:[{t:'13:00',p:'柏油路打滚晒肚皮'}] },
+      { id:'cat10', en:'Latte',  cn:'拿铁',   kind:'cat', breed:'橘白猫', tag:'野生', area:'社区草坪', xy:[-18,60], stars:3, seen:19, collected:false, note:'一脸不高兴是天生的，其实脾气很好。', trace:[{t:'11:20',p:'草坪蹲坐嫌弃路人'}] },
+      { id:'cat11', en:'Hunter', cn:'猎手',   kind:'cat', breed:'三花猫', tag:'野生', area:'农田边', xy:[150,140], stars:5, seen:12, collected:false, note:'街区捕鼠冠军，战利品从不离口。', trace:[{t:'17:40',p:'田埂叼着战利品巡街'}] },
+      { id:'cat12', en:'Cocoa',  cn:'可可',   kind:'cat', breed:'长毛猫', tag:'野生', area:'河堤草丛', xy:[95,130], stars:3, seen:9,  collected:false, note:'一身巧克力色，逆光时眼睛亮得像两盏灯。', trace:[{t:'16:30',p:'草丛里回头杀'}] },
+      { id:'dog2',  en:'Curly',  cn:'卷卷',   kind:'dog', breed:'可卡犬', tag:'家养', area:'Block A 小区', xy:[82,64], stars:4, seen:47, collected:false, note:'一头大波浪，踩完花坛回家蹭沙发。', trace:[{t:'10:00',p:'小区楼下遛弯'}] },
+      { id:'dog3',  en:'Oreo',   cn:'奥利奥', kind:'dog', breed:'边牧', tag:'家养', area:'Riverside 河边', xy:[128,116], stars:5, seen:63, collected:false, note:'全小区最聪明的狗，掉毛量也是第一名。', trace:[{t:'07:30',p:'河边接飞盘'}] },
+      { id:'cat13', en:'Amber',  cn:'琥珀',   kind:'cat', breed:'玳瑁猫', tag:'野生', area:'墙根小院', xy:[-30,10], stars:3, seen:16, collected:false, note:'墙角打滚专业户，肚皮可看不可摸。', trace:[{t:'14:20',p:'墙根草边翻滚'}] },
+      { id:'cat14', en:'Disco',  cn:'迪斯科', kind:'cat', breed:'橘猫', tag:'野生', area:'林荫道', xy:[-38,-28], stars:4, seen:33, collected:false, note:'会站起来跳舞的橘猫，落叶season限定演出。', trace:[{t:'15:50',p:'林荫道单手摘星'}] },
+      { id:'cat15', en:'Kungfu', cn:'功夫',   kind:'cat', breed:'狸花猫', tag:'野生', area:'码头', xy:[160,90], stars:4, seen:28, collected:false, note:'黄昏码头站桩练拳，疑似猫界宗师。', trace:[{t:'18:10',p:'码头夕阳下出拳'}] }
     ],
     events: [
       { id:'e1', type:'丢失', title:'小白走丢了', place:'Maple St 街角', time:'2 小时前', by:'Momo', desc:'白色田园猫，戴蓝色项圈，胆子小。昨晚从 3 号楼窗户跑出去，最后出现在街角便利店附近。' },
@@ -786,20 +817,55 @@ class Component extends DCLogic {
       '狸花猫': '#b3874e',
       '三花猫': '#e79a5b',
       '天使猫': '#c3b3e0',
-      '小狗': '#cf9a63'
+      '长毛猫': '#8a6f52',
+      '橘白猫': '#f0c789',
+      '玳瑁猫': '#6b4f3a',
+      '橘猫':   '#e8963e',
+      '小狗':   '#cf9a63',
+      '可卡犬': '#d9a86a',
+      '边牧':   '#4a4a4a'
     };
     const bodyColor = bodyByBreed[a.breed] || (isCat ? '#b3874e' : '#cf9a63');
     // 背景保持透明、标签保持白色（去掉之前的粉/蓝底色）
     return { bodyColor, iconBg: 'transparent', labelBg: '#fff' };
   }
 
+  // ── 虚拟定位:地图是 0-100 的虚拟坐标系(手绘插画的百分比),「我」固定在
+  // ME 处;比例尺 1 坐标单位 ≈ 8m,NEARBY_M 内算「附近」。宠物 xy 允许出界
+  // (<0 或 >100),表示在当前地图视野之外——有距离、可进列表,但不出 pin。
+  static ME = [44, 47];
+  static SCALE_M = 8;
+  static NEARBY_M = 500;
+
+  // petId -> petlib 图库真实照片(档案页展示用);用户新建档的宠物不在此表,回退上传槽
+  static PHOTO = {
+    cat1:'catt-1.jpg', cat2:'memw-2.jpg', cat3:'onion-1.jpg', cat4:'scar-1.jpg', cat5:'mochi-1.jpg', dog1:'dada-1.jpg',
+    cat6:'02_pin7011961860.jpg', cat7:'19_pin6780225098.jpg', cat8:'21_pin7032012205.jpg', cat9:'22_pin7030436621.jpg',
+    cat10:'23_pin3860038557.jpg', cat11:'26_pin5120886183.jpg', cat12:'27_pin7018578576.jpg', dog2:'30_pin5623092788.jpg',
+    dog3:'36_pin5157752165.jpg', cat13:'42_pin7032488465.jpg', cat14:'46_pin2911788931.jpg', cat15:'48_pin3568876602.jpg'
+  };
+
+  distanceM(a){
+    if (!a.xy) return null; // 无坐标(如天使宠物)不参与定位
+    const dx = a.xy[0] - Component.ME[0], dy = a.xy[1] - Component.ME[1];
+    return Math.round(Math.hypot(dx, dy) * Component.SCALE_M);
+  }
+
   enrich(a){
     const isCat = a.kind === 'cat', isAngel = a.tag === '天使';
     const visual = this.petVisual(a);
+    const distM = this.distanceM(a);
+    const onMap = !!a.xy && a.xy[0] >= 0 && a.xy[0] <= 100 && a.xy[1] >= 0 && a.xy[1] <= 100;
     return { ...a, ...visual,
+      distM,
+      isNearby: distM !== null && distM <= Component.NEARBY_M,
+      dist: distM === null ? '' : distM >= 1000 ? (distM / 1000).toFixed(1) + 'km' : distM + 'm',
+      onMap, x: onMap ? a.xy[0] + '%' : '', y: onMap ? a.xy[1] + '%' : '',
       isCat, isDog: !isCat, isAngel, notAngel: !isAngel,
       plainCat: isCat && !isAngel, plainDog: !isCat && !isAngel,
       photoId: 'photo-' + a.id,
+      photo: Component.PHOTO[a.id] ? './petlib/' + Component.PHOTO[a.id] : '',
+      hasPhoto: !!Component.PHOTO[a.id], noPhoto: !Component.PHOTO[a.id],
       cardFill: isAngel ? '#fff8e2' : '#fff',
       // 天使/纪念框：黑线本身改成彩虹渐变（不再用边缘辉光）
       frameStroke: isAngel ? 'url(#rainbow)' : '#141414',
@@ -813,8 +879,39 @@ class Component extends DCLogic {
     const s = this.state;
     const pets = s.pets.map(a => this.enrich(a));
     const collected = pets.filter(a => a.collected);
-    const nearby = pets.filter(a => a.dist);
-    const mapPets = pets.filter(a => a.x);
+    // 附近 = 虚拟定位 NEARBY_M 范围内,按距离升序;地图 pin = 坐标在当前视野内
+    const nearby = pets.filter(a => a.isNearby).sort((a, b) => a.distM - b.distM);
+
+    // ── 地图 pin 聚合:两 pin 相距 < CLUSTER_R 坐标单位(pin 宽约 20 单位,即
+    // 视觉重叠的距离)时折叠成一个数字气泡,点开在四周扇形展开成员,再点收起。
+    const CLUSTER_R = 20, FAN_R = 15;
+    const clusters = [];
+    for (const p of pets.filter(a => a.onMap)) {
+      const c = clusters.find(c => Math.hypot(c.cx - p.xy[0], c.cy - p.xy[1]) < CLUSTER_R);
+      if (c) {
+        c.members.push(p);
+        c.cx = c.members.reduce((s, m) => s + m.xy[0], 0) / c.members.length;
+        c.cy = c.members.reduce((s, m) => s + m.xy[1], 0) / c.members.length;
+      } else clusters.push({ members: [p], cx: p.xy[0], cy: p.xy[1] });
+    }
+    const mapPets = [], mapClusters = [];
+    const clamp = (v) => Math.max(5, Math.min(95, v));
+    for (const c of clusters) {
+      if (c.members.length === 1) { mapPets.push(c.members[0]); continue; }
+      const key = c.members.map(m => m.id).sort().join(',');
+      const open = s.openCluster === key;
+      if (open) {
+        // 扇形展开:从正上方起均匀分布一圈,防止出界
+        c.members.forEach((m, i) => {
+          const ang = -Math.PI / 2 + (i * 2 * Math.PI) / c.members.length;
+          mapPets.push({ ...m, x: clamp(c.cx + FAN_R * Math.cos(ang)) + '%', y: clamp(c.cy + FAN_R * Math.sin(ang)) + '%' });
+        });
+      }
+      mapClusters.push({
+        key, x: c.cx + '%', y: c.cy + '%', count: c.members.length, open, closed: !open,
+        toggle: () => this.setState({ openCluster: open ? null : key })
+      });
+    }
     const events = s.events.map(e => ({ ...e, warnCopy: this.warnCopyFor(e.type), openThis: () => this.openEvent(e.id) }));
     const mapEvents = events.slice(0, 1).map(e => ({ ...e, x: '30%', y: '22%' }));
     const current = pets.find(a => a.id === s.petId) || pets[0];
@@ -872,7 +969,7 @@ class Component extends DCLogic {
         const entry = { t: '12:51', p: s.uploadNote ? '偶遇 · ' + s.uploadNote : '偶遇 · ' + current.area };
         this.setState({
           view: null, viewFrom: null, tab: 'dex', uploadNote: '',
-          pets: this.state.pets.map(p => p.id === current.id ? { ...p, seen: p.seen + 1, hasUpdate: true, trace: [...p.trace, entry] } : p)
+          pets: this.state.pets.map(p => p.id === current.id ? { ...p, seen: p.seen + 1, hasUpdate: true, collected: true, trace: [...p.trace, entry] } : p)
         });
         this.pushNotice('label', '#eef4dc', '图鉴有新动态', current.en + ' 刚刚被你偶遇 · ' + current.area);
         this.showToast('已记录相遇，点图鉴里 TA 的卡片查看 🐾');
@@ -886,7 +983,7 @@ class Component extends DCLogic {
       createPet: () => {
         const id = 'new' + Date.now();
         const pet = { id, en: s.newPetName || 'Nameless', cn: '新朋友', kind: s.newPetKind, breed: s.newPetKind === 'cat' ? '狸花猫' : '小狗', tag: s.newPetTag,
-          area: '当前位置', dist: '0m', stars: 3, seen: 1, collected: true, hasUpdate: true, x: '50%', y: '40%',
+          area: '当前位置', xy: [Component.ME[0], Component.ME[1]], stars: 3, seen: 1, collected: true, hasUpdate: true,
           note: '刚刚建档的新朋友，欢迎来到地图！', trace: [{ t: '12:51', p: '当前位置 · 初次相遇' }] };
         this.setState({ pets: [...this.state.pets, pet], view: 'pet', petId: id, newPetName: '', viewFrom: null });
         this.pushNotice('label', '#eef4dc', '新宠物建档成功', pet.en + ' 已加入你的图鉴 · 当前位置');
@@ -904,7 +1001,7 @@ class Component extends DCLogic {
         this.showToast('已发布，附近用户将收到提醒');
       },
 
-      pets, collected, nearby, mapPets, events, mapEvents, current, currentEvent,
+      pets, collected, nearby, mapPets, mapClusters, events, mapEvents, current, currentEvent,
       notices: s.notices.map(n => ({ ...n, iconSrc: './assets/' + n.icon + '.png' })),
       inboxUnread: s.notices.some(n => n.unread),
       collectedCount: collected.length,
