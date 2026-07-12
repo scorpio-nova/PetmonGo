@@ -1,6 +1,8 @@
 // 离线预计算宠物图库的 CLIP 图片 embedding。
 // 用法: node build-embeddings.mjs
 // 输出: ../project/petlib/embeddings.json  { model, dim, pets: [{id, file, vec}] }
+//       ../project/petlib/embeddings.js    同一份数据挂到 window.PETLIB_EMBEDDINGS,
+//                                          供页面在 file:// 下以 <script> 加载
 import { pipeline, RawImage } from '@xenova/transformers';
 import { readdir, writeFile } from 'fs/promises';
 import { join, dirname } from 'path';
@@ -27,8 +29,10 @@ for (const file of files) {
   console.log(`${file} -> ${id} (dim ${vec.length})`);
 }
 
+const json = JSON.stringify({ model: MODEL, dim: pets[0]?.vec.length ?? 0, pets });
+await writeFile(join(libDir, 'embeddings.json'), json);
 await writeFile(
-  join(libDir, 'embeddings.json'),
-  JSON.stringify({ model: MODEL, dim: pets[0]?.vec.length ?? 0, pets })
+  join(libDir, 'embeddings.js'),
+  `// 由 tools/build-embeddings.mjs 生成 — embeddings.json 的 file:// 可用版本\nwindow.PETLIB_EMBEDDINGS = ${json};\n`
 );
-console.log(`wrote ${pets.length} embeddings to petlib/embeddings.json`);
+console.log(`wrote ${pets.length} embeddings to petlib/embeddings.{json,js}`);

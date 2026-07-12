@@ -7,8 +7,9 @@
 // 图库照片放在 ./petlib/<petId>-<n>.jpg,embeddings.json 由
 // tools/build-embeddings.mjs 离线生成(node tools/build-embeddings.mjs)。
 //
-// 注意:页面必须通过 HTTP 访问(如 python3 -m http.server),file:// 下
-// fetch 不到 embeddings.json;首次匹配会从 CDN 下载模型(约 30MB),之后走缓存。
+// 图库向量优先读 window.PETLIB_EMBEDDINGS(petlib/embeddings.js,普通 script
+// 引入,file:// 下也能用);没有时才 fetch embeddings.json(需 HTTP 访问)。
+// 首次匹配会从 CDN 下载模型(约 30MB),之后走缓存。
 window.petMatch = (() => {
   const LIB = './petlib/';
   const CDN = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
@@ -18,13 +19,13 @@ window.petMatch = (() => {
   let ready = null;
 
   async function load() {
-    const [tf, lib] = await Promise.all([
-      import(CDN),
-      fetch(LIB + 'embeddings.json').then((r) => {
-        if (!r.ok) throw new Error('加载 petlib/embeddings.json 失败(需通过 HTTP 打开页面)');
-        return r.json();
-      }),
-    ]);
+    const libP = window.PETLIB_EMBEDDINGS
+      ? Promise.resolve(window.PETLIB_EMBEDDINGS)
+      : fetch(LIB + 'embeddings.json').then((r) => {
+          if (!r.ok) throw new Error('加载 petlib/embeddings.json 失败(需通过 HTTP 打开页面)');
+          return r.json();
+        });
+    const [tf, lib] = await Promise.all([import(CDN), libP]);
     tf.env.allowLocalModels = false;
     const extractor = await tf.pipeline('image-feature-extraction', lib.model, { quantized: true });
     return { extractor, lib, RawImage: tf.RawImage };

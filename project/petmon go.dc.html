@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<!-- 图库向量以 JS 形式内联加载,file:// 下 fetch 不到 json 也能识别 -->
+<script src="./petlib/embeddings.js"></script>
 <script src="./pet-match.js"></script>
 <!-- image-slot 用普通 script 预注册:x-import 靠 fetch 加载,file:// 下会失败导致上传框点不动 -->
 <script src="./image-slot.js"></script>
