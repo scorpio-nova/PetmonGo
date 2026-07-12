@@ -3,7 +3,9 @@
 #
 # 说明:
 # - 纯静态站,root 直接指向仓库工作区的 project 目录(deploy.sh 会在这里生成 index.html)。
-# - .wasm / .onnx 需要正确 MIME,否则浏览器里的 CLIP 模型加载会失败(自托管模型后必需)。
+# - 识别模型已全站自托管:transformers.js / onnxruntime .wasm / CLIP 视觉模型都在 project 下
+#   (project/vendor/、project/models/),不再依赖 huggingface / jsdelivr。
+# - .wasm 必须以 application/wasm 返回,否则浏览器 WebAssembly 流式编译失败,模型加载报错。
 
 server {
     listen      80;
@@ -16,24 +18,29 @@ server {
     root  /var/www/petmon-go/repo/project;
     index index.html;
 
-    # 单页应用:找不到的路径回落到入口
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # 模型 / 运行时:大文件长缓存 + 正确 MIME
-    types {
-        application/wasm            wasm;
-        application/octet-stream    onnx;
-    }
-    location ~* \.(wasm|onnx|json)$ {
+    # onnxruntime 运行时:.wasm 需正确 MIME。这里用「空 types + default_type」只覆盖本 location,
+    # 不会像 server 级 types{} 那样冲掉全局 mime.types(否则 js/css/图片全变 octet-stream,整站崩)。
+    location ~* \.wasm$ {
+        types { }
+        default_type application/wasm;
         add_header Cache-Control "public, max-age=604800";
         try_files $uri =404;
     }
 
-    # 图库图片等静态资源缓存
+    # 模型权重 / 预计算向量:大文件长缓存,缺失直接 404(不要回落到 index.html)
+    location ~* \.(onnx|json)$ {
+        add_header Cache-Control "public, max-age=604800";
+        try_files $uri =404;
+    }
+
+    # 图库图片、脚本等静态资源:短缓存(js/css 的 MIME 交给全局 mime.types,勿在此覆盖)
     location ~* \.(jpg|jpeg|png|webp|svg|js|css)$ {
         add_header Cache-Control "public, max-age=86400";
+    }
+
+    # 单页应用:其余找不到的路径回落到入口
+    location / {
+        try_files $uri $uri/ /index.html;
     }
 
     access_log /var/log/nginx/petmongo.access.log;

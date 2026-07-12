@@ -58,9 +58,20 @@ sudo certbot --nginx -d petmongo.softlanding.com.cn
 
 certbot 会自动改写上面的 nginx 配置并配好自动续期。之后把 `nginx.conf.example` 里 80→443 的跳转注释打开。
 
-## 仍待处理：识别功能的模型自托管
+## 识别功能的模型自托管（已完成）
 
-当前识别用的 CLIP 模型从 jsdelivr + huggingface.co 下载，**国内直连 huggingface 不通**，观众用识别会报错。
-需要把模型（`vision_model_quantized.onnx` ~85MB）、onnxruntime 的 `.wasm`、`transformers.js` 一并放到本服务器，
-并把 `pet-match.js` 里的 CDN 地址改成本站相对路径 + 设置 `env.localModelPath`。
-nginx 配置里的 `.wasm/.onnx` MIME 已经预留好。这块单独做，告诉我即可。
+识别用的 CLIP 模型不再从 jsdelivr / huggingface.co 下载（**国内直连 huggingface 不通**），
+以下资源全部随仓库自托管，`git pull` 到服务器后由 nginx 就地供给：
+
+```
+project/vendor/transformers.min.js            transformers.js 浏览器构建(库本身)
+project/vendor/ort/ort-wasm*.wasm             onnxruntime-web 运行时(4 个)
+project/models/Xenova/clip-vit-base-patch32/  config + preprocessor + onnx/vision_model_quantized.onnx(~89MB)
+```
+
+`pet-match.js` 已改为:`env.allowRemoteModels=false` + `env.localModelPath=./models/`
++ `env.backends.onnx.wasm.wasmPaths=./vendor/ort/`，用 `CLIPVisionModelWithProjection`
+直接加载视觉塔输出 512 维 image_embeds。nginx 配置里 `.wasm` 已按 `application/wasm` 正确返回。
+
+> 已用无头浏览器端到端验证:全本地加载、对 huggingface/jsdelivr **零外部请求**、识别结果与线下一致(Scar 0.98)。
+> 重新生成图库向量: `cd tools && npm i && node build-embeddings.mjs`(默认读本地 `project/models`,无需联网)。
