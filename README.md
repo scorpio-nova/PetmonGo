@@ -1,22 +1,55 @@
-# CODING AGENTS: READ THIS FIRST
+# 🐾 Petmon Go · 街区宠物地图
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+> 把身边的猫猫狗狗，变成一张可以收集、共建的街区地图。
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+**Petmon Go** 是一个"宠物版 Pokémon Go"。走在小区里遇到一只猫、一只狗，掏出手机拍一张，就能把这次相遇记进图鉴——顺便帮整条街的邻居认识这只小家伙。
 
-## What you should do — IMPORTANT
+爱猫人、宠物主和普通住户，共享同一份街区宠物信息：谁家的、性格如何、最近在哪出现、有没有需要注意的安全事件。既是实用工具，也是一场温柔的收集游戏。🗺️
 
-**Read `project/petmon go.dc.html` in full.** This is the primary (and only) design to build. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+---
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## 🎯 我们想解决什么
 
-## About the design files
+社区里的流浪猫、散养宠物，信息全靠口口相传：
+- 喂猫的志愿者不知道这只猫昨天有没有人喂过；
+- 遛狗的居民不知道前面那只狗亲不亲人；
+- 关心安全的住户，看到虐猫、走失、咬人却无处提醒。
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+Petmon Go 把这些散落的信息，收进一张**大家一起建、一起看**的地图里。
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+---
 
-## Bundle contents
+## ✨ 特色功能
 
-- `refer/README.md` — this file
-- `refer/project/` — the `Refer` project files (HTML prototypes, assets, components)
+| 功能 | 说明 |
+|------|------|
+| 📸 **拍照识别 · 一拍入档** | 拍下遇到的宠物，AI 自动匹配图鉴里的"老朋友"，命中就补一次相遇，没见过就帮它建新档案 |
+| 📖 **专属图鉴 · 收集踪迹** | 每只宠物都有档案与"今日踪迹"时间线，收集越多、地图越活，还有未读红点提醒新动态 |
+| 🗺️ **街区地图 · 一眼看清** | 宠物点位、安全事件在地图上一目了然，附近有什么、发生过什么，打开就知道 |
+| 🐈 **野生 / 家养 / 天使** | 三类宠物标签，区分流浪、有主与已经离开的小天使 |
+| 🌈 **天使纪念卡** | 为离开的宠物做一张彩虹纪念卡，供奉一根小鱼干、一块小骨头，好好道别 |
+| 🛡️ **安全事件提醒** | 虐猫 / 走失 / 抓人 / 咬人 四类事件，带位置与类型化提醒，让邻里更安心 |
+
+---
+
+## 🧠 一点技术小骄傲
+
+- 🎨 **AI 时代，手绘温度** —— 全站稚拙涂鸦风 + 手写字体，一笔一画的界面，都是艺术家亲手画的。
+- 🤖 **识别跑在你手机里** —— 用 CLIP 模型在浏览器本地完成宠物识别与匹配，**无需后端、无需 GPU**，你的照片不离开设备。
+
+---
+
+## 🚀 想亲自体验
+
+克隆仓库后，在 `project/` 目录下：
+
+```bash
+python3 -m http.server
+```
+
+浏览器打开 `petmon go.dc.html` 即可完整体验。
+（首次使用拍照识别需联网下载约 30MB 的 AI 模型，之后本地缓存。）
+
+---
+
+<p align="center">🐱 遇见每一只，记住每一只 🐶</p>
