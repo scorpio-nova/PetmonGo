@@ -498,7 +498,7 @@
           <div style="margin-top:8px;font-size:15px;color:#8f8b83">放入照片后自动识别 · drop a photo above</div>
         </sc-if>
         <sc-if value="{{ matchBusy }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:8px;font-size:15px;color:#8f8b83">识别中… 首次使用需下载模型（约 30MB），请稍候</div>
+          <div style="margin-top:8px;font-size:15px;color:#8f8b83">识别中… 首次使用需加载模型（约 90MB，本站直供），请稍候</div>
         </sc-if>
         <sc-if value="{{ matchFailed }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:8px;font-size:15px;color:#b3261e">识别失败：{{ matchErrorText }}</div>

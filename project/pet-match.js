@@ -15,8 +15,15 @@
 // file:// 下也能用);没有时才 fetch embeddings.json(需 HTTP 访问)。
 window.petMatch = (() => {
   const LIB = './petlib/';
-  const BASE = './';                              // 站点根(index.html 同级);相对 document base 解析
-  const TF = BASE + 'vendor/transformers.min.js'; // 本站 transformers.js
+  // pet-match.js 自身所在目录的绝对 URL。用绝对基址而非 './':classic script 里的
+  // 相对 import() 在 file:// / 子路径下会因基址解析失败而报错(base URL about:blank)。
+  const SELF = (document.currentScript && document.currentScript.src) || '';
+  const BASE = SELF ? SELF.slice(0, SELF.lastIndexOf('/') + 1) : new URL('.', location.href).href;
+  const TF = BASE + 'vendor/transformers.min.js';   // 本站自托管的 transformers.js
+  // file:// 双击打开时:浏览器 CORS 禁止 fetch 本地模型/wasm,远程 huggingface 又被墙,
+  // 两条模型来源都不通 —— 识别只能在 HTTP 下工作。用它做前置拦截,给可操作提示而非诡异报错。
+  const FILE_HINT = '拍照识别需通过 HTTP 打开页面(file:// 下浏览器禁止加载本地模型)。' +
+    '本地测试:在 project 目录运行  python3 -m http.server 8000  再访问 http://localhost:8000/;或直接用部署后的网址。';
   // 图库文件名前缀 -> app 内 state.pets 的 id
   const ID_MAP = {
     catt: 'cat1', memw: 'cat2', dada: 'dog1', onion: 'cat3', scar: 'cat4', mochi: 'cat5',
@@ -29,6 +36,7 @@ window.petMatch = (() => {
   let ready = null;
 
   async function load() {
+    if (location.protocol === 'file:') throw new Error(FILE_HINT);
     const libP = window.PETLIB_EMBEDDINGS
       ? Promise.resolve(window.PETLIB_EMBEDDINGS)
       : fetch(LIB + 'embeddings.json').then((r) => {
@@ -38,12 +46,12 @@ window.petMatch = (() => {
     const [tf, lib] = await Promise.all([import(TF), libP]);
     const { env, AutoProcessor, CLIPVisionModelWithProjection, RawImage } = tf;
 
-    // 只走本站:禁远程 hub,模型/运行时都指到本地路径
+    // 全站自托管:禁远程 hub,库/运行时/模型全指本站(国内 HTTP 也能加载,不碰 huggingface/jsdelivr)
     env.allowRemoteModels = false;
     env.allowLocalModels = true;
-    env.localModelPath = BASE + 'models/';                 // -> ./models/Xenova/clip-vit-base-patch32/…
+    env.localModelPath = BASE + 'models/';               // -> <base>/models/Xenova/clip-vit-base-patch32/…
     env.backends.onnx.wasm.wasmPaths = BASE + 'vendor/ort/';
-    env.backends.onnx.wasm.numThreads = 1;                 // 单线程:免 SharedArrayBuffer / 跨源隔离,用非线程版 wasm
+    env.backends.onnx.wasm.numThreads = 1;               // 单线程:免 SharedArrayBuffer / 跨源隔离,用非线程版 wasm
 
     const model = lib.model || 'Xenova/clip-vit-base-patch32';
     const [processor, vision] = await Promise.all([
