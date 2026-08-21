@@ -16,10 +16,17 @@
 
     <!-- 我的内容 -->
     <scroll-view class="me-content" scroll-y>
-      <!-- 设置按钮 -->
-      <view class="settings-btn" @click="openSettings">
-        <text class="settings-icon">⚙️</text>
-        <text class="settings-text">设置</text>
+      <!-- 顶部操作栏 -->
+      <view class="top-actions">
+        <view class="inbox-btn" @click="openInbox">
+          <text class="inbox-icon">📬</text>
+          <text class="inbox-text">消息</text>
+          <view v-if="hasUnread" class="unread-dot"></view>
+        </view>
+        <view class="settings-btn" @click="openSettings">
+          <text class="settings-icon">⚙️</text>
+          <text class="settings-text">设置</text>
+        </view>
       </view>
 
       <!-- 用户信息 -->
@@ -121,6 +128,8 @@ onShow(() => {
   if (page && typeof page.getTabBar === 'function' && page.getTabBar()) {
     page.getTabBar().setData({ selected: 3 })
   }
+  // 检查未读消息
+  checkUnread()
 })
 
 // 当前时间
@@ -129,17 +138,33 @@ const currentTime = ref('12:51')
 // 投喂次数
 const myFeeds = ref(15)
 
+// 是否有未读消息
+const hasUnread = ref(false)
+
 // 已收集宠物数量
 const collectedCount = computed(() => {
   return petsData.filter(p => p.collected).length
 })
 
+// 检查未读消息
+function checkUnread() {
+  const notices = uni.getStorageSync('notices')
+  if (notices) {
+    const list = JSON.parse(notices)
+    hasUnread.value = list.some((n: any) => n.unread)
+  }
+}
+
+// 打开消息中心
+function openInbox() {
+  uni.navigateTo({
+    url: '/pages/inbox/index',
+  })
+}
+
 // 打开设置
 function openSettings() {
-  uni.showToast({
-    title: '设置功能开发中',
-    icon: 'none'
-  })
+  uni.$showToast('设置功能开发中', 'loading')
 }
 
 // 获取当前时间
@@ -213,6 +238,43 @@ onMounted(() => {
 .me-content {
   padding: 20rpx 44rpx;
   box-sizing: border-box;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.inbox-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  border: 4rpx solid #141414;
+  border-radius: 28rpx;
+  padding: 6rpx 24rpx;
+  background: #fff;
+}
+
+.inbox-icon {
+  font-size: 32rpx;
+}
+
+.inbox-text {
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.unread-dot {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 16rpx;
+  height: 16rpx;
+  background: #ef6a4f;
+  border-radius: 50%;
 }
 
 .settings-btn {

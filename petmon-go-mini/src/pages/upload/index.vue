@@ -93,12 +93,50 @@ function deletePhoto() {
 
 // 提交上传
 function submitUpload() {
-  uni.showToast({
-    title: '已记录相遇 🐾',
-    icon: 'none'
-  })
+  if (!pet.value) {
+    uni.$showToast('宠物信息不存在', 'error')
+    return
+  }
+
+  // 创建相遇记录
+  const encounter = {
+    id: 'enc_' + Date.now(),
+    petId: pet.value.id,
+    photo: photo.value,
+    note: note.value || '偶遇 · ' + pet.value.area,
+    time: new Date().toLocaleString('zh-CN'),
+    location: pet.value.area,
+  }
+
+  // 保存到本地
+  const encounters = uni.getStorageSync('encounters')
+  const encountersList = encounters ? JSON.parse(encounters) : []
+  encountersList.unshift(encounter)
+  uni.setStorageSync('encounters', JSON.stringify(encountersList))
+
+  // 更新宠物数据（增加 seen 计数）
+  const pets = uni.getStorageSync('pets')
+  const petsList = pets ? JSON.parse(pets) : []
+  const petIndex = petsList.findIndex((p: any) => p.id === pet.value!.id)
+  if (petIndex >= 0) {
+    petsList[petIndex].seen = (petsList[petIndex].seen || 0) + 1
+    petsList[petIndex].hasUpdate = true
+    if (!petsList[petIndex].trace) petsList[petIndex].trace = []
+    petsList[petIndex].trace.push({
+      t: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+      p: '偶遇 · ' + pet.value.area,
+    })
+    uni.setStorageSync('pets', JSON.stringify(petsList))
+  }
+
+  // 显示成功提示
+  uni.$showToast('已记录相遇 🐾', 'success')
+
+  // 跳转到图鉴页
   setTimeout(() => {
-    uni.navigateBack()
+    uni.switchTab({
+      url: '/pages/dex/index',
+    })
   }, 1500)
 }
 

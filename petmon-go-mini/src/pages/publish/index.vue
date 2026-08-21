@@ -43,19 +43,15 @@ function goBack() {
   uni.navigateBack()
 }
 
-// 去拍照识别（第一阶段不实现）
+// 去拍照识别（第二阶段实现）
 function goRecognize() {
-  uni.showToast({
-    title: '宠物识别功能开发中',
-    icon: 'none'
-  })
+  uni.$showToast('宠物识别功能开发中', 'loading')
 }
 
-// 去发布事件（第一阶段不实现）
+// 去发布事件
 function goPubEvent() {
-  uni.showToast({
-    title: '发布事件功能开发中',
-    icon: 'none'
+  uni.navigateTo({
+    url: '/pages/report-event/index',
   })
 }
 </script>
