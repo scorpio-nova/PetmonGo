@@ -36,6 +36,14 @@ uni.$hideToast = hideToast;
 
 onLaunch(() => {
   console.log("App Launch");
+
+  // 初始化云开发
+  if (wx.cloud) {
+    wx.cloud.init({
+      env: 'petmon-backend-d0gdzcyjw2d9f70ba',
+      traceUser: true
+    });
+  }
 });
 onShow(() => {
   console.log("App Show");
