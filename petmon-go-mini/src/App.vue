@@ -62,8 +62,67 @@ onHide(() => {
 
 <style>
 /* 全局样式 */
+@font-face {
+  font-family: 'Gaegu';
+  src: url('https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Gaegu';
+  src: url('https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Long Cang';
+  src: url('https://fonts.gstatic.com/s/longcang/v20/LYjAdGP8kkQ-IF3dMPGP_kYZW8g.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
 page {
   background: #fffdf8;
+  font-family: 'Gaegu', 'Long Cang', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 手绘风格边框 */
+.sketch-border {
+  border: 5rpx solid #141414;
+  border-radius: 24rpx;
+  position: relative;
+}
+
+.sketch-border::before {
+  content: '';
+  position: absolute;
+  inset: -2rpx;
+  border: 3rpx solid #141414;
+  border-radius: 26rpx;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+.float-animation {
+  animation: float 4.5s ease-in-out infinite;
+}
+
+/* 弹出动画 */
+@keyframes pop {
+  0% { transform: translateY(48rpx); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.pop-animation {
+  animation: pop 0.25s ease-out;
 }
 
 /* Toast 样式 */

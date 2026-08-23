@@ -2,12 +2,6 @@
   <view class="container">
     <!-- 自定义导航栏 -->
     <view class="nav-bar">
-      <view class="nav-status">
-        <text class="time">{{ currentTime }}</text>
-        <view class="battery">
-          <text class="battery-text">45</text>
-        </view>
-      </view>
       <view class="nav-title">
         <text class="app-name">petmon go</text>
         <text class="nav-subtitle">nearby 附近</text>
@@ -74,12 +68,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { petsData, type Pet } from '@/data/pets'
+import { buildMapMarkers, findPetByMarkerId } from '@/utils/map-markers'
 
 // 设置自定义 TabBar 选中状态
 onShow(() => {
   const page = getCurrentPages().pop()
-  if (page && typeof page.getTabBar === 'function' && page.getTabBar()) {
-    page.getTabBar().setData({ selected: 0 })
+  const tabBar = page && typeof page.getTabBar === 'function' ? page.getTabBar() : null
+  if (tabBar) {
+    tabBar.setData({ selected: 0 })
   }
 })
 
@@ -130,31 +126,12 @@ const nearbyPets = computed(() => {
 
 // 地图标记点
 const mapMarkers = computed(() => {
-  return petsData
-    .filter(p => p.xy && p.collected)
-    .map(p => ({
-      id: p.id,
-      latitude: currentLat.value + (p.xy![1] - ME[1]) * 0.0001,
-      longitude: currentLng.value + (p.xy![0] - ME[0]) * 0.0001,
-      callout: {
-        content: p.en,
-        display: 'ALWAYS' as const,
-        borderRadius: 10,
-        bgColor: '#fff',
-        color: '#141414',
-        fontSize: 14,
-        padding: 5
-      },
-      iconPath: `/static/icons/${p.kind}.png`,
-      width: 30,
-      height: 30
-    }))
+  return buildMapMarkers(petsData, currentLat.value, currentLng.value)
 })
 
 // 点击标记点
 function onMarkerTap(e: any) {
-  const petId = e.detail.id
-  const pet = petsData.find(p => p.id === petId)
+  const pet = findPetByMarkerId(petsData, e.detail.markerId)
   if (pet) {
     selectedPet.value = pet
   }
@@ -195,34 +172,8 @@ onMounted(() => {
 }
 
 .nav-bar {
-  padding: 80rpx 44rpx 16rpx;
+  padding: 20rpx 44rpx 16rpx;
   background: #fffdf8;
-}
-
-.nav-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4rpx;
-}
-
-.time {
-  font-size: 34rpx;
-  font-weight: 700;
-}
-
-.battery {
-  display: flex;
-  align-items: center;
-  border: 4rpx solid #141414;
-  border-radius: 10rpx;
-  padding: 0 10rpx;
-  height: 38rpx;
-}
-
-.battery-text {
-  font-size: 26rpx;
-  font-weight: 700;
 }
 
 .nav-title {
@@ -232,12 +183,14 @@ onMounted(() => {
 }
 
 .app-name {
+  font-family: 'Gaegu', 'Long Cang', cursive;
   font-size: 58rpx;
   font-weight: 700;
   letter-spacing: -1rpx;
 }
 
 .nav-subtitle {
+  font-family: 'Gaegu', 'Long Cang', cursive;
   font-size: 32rpx;
   color: #8f8b83;
 }

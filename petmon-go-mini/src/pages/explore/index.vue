@@ -2,12 +2,6 @@
   <view class="container">
     <!-- 导航栏 -->
     <view class="nav-bar">
-      <view class="nav-status">
-        <text class="time">{{ currentTime }}</text>
-        <view class="battery">
-          <text class="battery-text">45</text>
-        </view>
-      </view>
       <view class="nav-title">
         <text class="app-name">petmon go</text>
         <text class="nav-subtitle">explore 探索</text>
@@ -124,8 +118,9 @@ import { eventsData } from '@/data/events'
 // 设置自定义 TabBar 选中状态
 onShow(() => {
   const page = getCurrentPages().pop()
-  if (page && typeof page.getTabBar === 'function' && page.getTabBar()) {
-    page.getTabBar().setData({ selected: 1 })
+  const tabBar = page && typeof page.getTabBar === 'function' ? page.getTabBar() : null
+  if (tabBar) {
+    tabBar.setData({ selected: 1 })
   }
 })
 
@@ -179,31 +174,9 @@ onMounted(() => {
   background: #fffdf8;
 }
 
-.nav-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4rpx;
-}
 
-.time {
-  font-size: 34rpx;
-  font-weight: 700;
-}
 
-.battery {
-  display: flex;
-  align-items: center;
-  border: 4rpx solid #141414;
-  border-radius: 10rpx;
-  padding: 0 10rpx;
-  height: 38rpx;
-}
 
-.battery-text {
-  font-size: 26rpx;
-  font-weight: 700;
-}
 
 .nav-title {
   display: flex;
@@ -212,6 +185,7 @@ onMounted(() => {
 }
 
 .app-name {
+  font-family: 'Gaegu', 'Long Cang', cursive;
   font-size: 58rpx;
   font-weight: 700;
   letter-spacing: -1rpx;

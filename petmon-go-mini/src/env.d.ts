@@ -8,9 +8,15 @@ declare module '*.vue' {
 }
 
 // 扩展 uni 类型
-declare namespace UniApp {
-  interface Uni {
-    $showToast: (message: string, type?: 'success' | 'error' | 'loading', duration?: number) => void
-    $hideToast: () => void
+interface Uni {
+  $showToast: (message: string, type?: 'success' | 'error' | 'loading', duration?: number) => void
+  $hideToast: () => void
+}
+
+declare namespace Page {
+  interface PageInstance {
+    getTabBar?: () => {
+      setData: (data: { selected: number }) => void
+    } | null
   }
 }
