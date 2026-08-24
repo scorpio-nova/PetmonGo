@@ -43,15 +43,73 @@ function goBack() {
   uni.navigateBack()
 }
 
-// 去拍照识别（第二阶段实现）
+// 登录并获取用户信息
+async function doLogin(): Promise<boolean> {
+  try {
+    // 调用微信获取用户信息接口
+    const userRes = await new Promise<any>((resolve, reject) => {
+      wx.getUserProfile({
+        desc: '用于完善用户资料',
+        success: resolve,
+        fail: reject
+      })
+    })
+
+    // 调用云函数登录
+    const loginRes = await wx.cloud.callFunction({ name: 'login' })
+    if (loginRes.result && loginRes.result.code === 0) {
+      const userInfo = {
+        ...loginRes.result.data.userInfo,
+        nickName: userRes.userInfo.nickName,
+        avatarUrl: userRes.userInfo.avatarUrl
+      }
+      uni.setStorageSync('userInfo', userInfo)
+      return true
+    }
+    return false
+  } catch (err) {
+    console.error('login error:', err)
+    return false
+  }
+}
+
+// 检查登录状态
+function requireLogin(callback: () => void) {
+  const userInfo = uni.getStorageSync('userInfo')
+  if (userInfo) {
+    callback()
+    return
+  }
+
+  uni.showModal({
+    title: '提示',
+    content: '此功能需要登录，是否现在登录？',
+    success: async (res) => {
+      if (res.confirm) {
+        const success = await doLogin()
+        if (success) {
+          callback()
+        } else {
+          uni.$showToast('登录失败，请重试', 'error')
+        }
+      }
+    }
+  })
+}
+
+// 去拍照识别
 function goRecognize() {
-  uni.$showToast('宠物识别功能开发中', 'loading')
+  requireLogin(() => {
+    uni.$showToast('宠物识别功能开发中', 'loading')
+  })
 }
 
 // 去发布事件
 function goPubEvent() {
-  uni.navigateTo({
-    url: '/pages/report-event/index',
+  requireLogin(() => {
+    uni.navigateTo({
+      url: '/pages/report-event/index',
+    })
   })
 }
 </script>

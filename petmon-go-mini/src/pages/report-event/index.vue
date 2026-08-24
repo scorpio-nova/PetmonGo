@@ -70,38 +70,41 @@ function goBack() {
 }
 
 // 提交事件
-function submitEvent() {
+async function submitEvent() {
   if (!eventDesc.value.trim()) {
     uni.$showToast('请填写事件描述', 'error')
     return
   }
 
-  // 创建事件数据
-  const newEvent = {
-    id: 'evt_' + Date.now(),
-    type: eventType.value,
-    title: eventType.value === '丢失' ? '宠物丢失' : eventType.value + '提醒',
-    desc: eventDesc.value,
-    place: 'Maple St 街角',
-    time: new Date().toLocaleString('zh-CN'),
-    by: 'Mille',
-  }
+  uni.$showToast('发布中...', 'loading', 0)
 
-  // 保存到本地
-  const events = uni.getStorageSync('events')
-  const eventsList = events ? JSON.parse(events) : []
-  eventsList.unshift(newEvent)
-  uni.setStorageSync('events', JSON.stringify(eventsList))
-
-  // 显示成功提示
-  uni.$showToast('已发布，附近用户将收到提醒 🐾', 'success')
-
-  // 跳转到地图页
-  setTimeout(() => {
-    uni.switchTab({
-      url: '/pages/index/index',
+  try {
+    const res = await wx.cloud.callFunction({
+      name: 'addEvent',
+      data: {
+        type: eventType.value,
+        title: eventType.value === '丢失' ? '宠物丢失' : eventType.value + '提醒',
+        desc: eventDesc.value,
+        place: 'Maple St 街角',
+      }
     })
-  }, 1500)
+
+    uni.$hideToast()
+
+    if (res.result && res.result.code === 0) {
+      uni.$showToast('已发布，附近用户将收到提醒 🐾', 'success')
+      setTimeout(() => {
+        uni.switchTab({
+          url: '/pages/index/index',
+        })
+      }, 1500)
+    } else {
+      uni.$showToast('发布失败：' + (res.result?.message || '未知错误'), 'error')
+    }
+  } catch (err) {
+    uni.$hideToast()
+    uni.$showToast('发布失败', 'error')
+  }
 }
 </script>
 

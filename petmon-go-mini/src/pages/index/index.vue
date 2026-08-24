@@ -16,7 +16,20 @@
         <text class="location-text">只毛孩子</text>
       </view>
 
+      <!-- 游客模式：显示区域信息 -->
+      <view v-if="!isLoggedIn" class="guest-map">
+        <view class="guest-pet-icon">
+          <image class="guest-icon-img" src="/static/icons/cat.png" mode="aspectFit" />
+        </view>
+        <view class="guest-bubble">
+          <text class="guest-names">{{ guestPetNames }}</text>
+          <text class="guest-hint">在此附近</text>
+        </view>
+      </view>
+
+      <!-- 登录用户：显示精确位置 -->
       <map
+        v-else
         class="pet-map"
         :latitude="currentLat"
         :longitude="currentLng"
@@ -26,13 +39,6 @@
         show-location
         @markertap="onMarkerTap"
       >
-        <!-- 自定义标记点样式 -->
-        <view slot="callout" class="callout-container" v-if="selectedPet">
-          <view class="callout-bubble">
-            <image class="callout-avatar" :src="selectedPet.photo" mode="aspectFill" />
-            <text class="callout-name">{{ selectedPet.en }}</text>
-          </view>
-        </view>
       </map>
     </view>
 
@@ -69,6 +75,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { petsData, type Pet } from '@/data/pets'
 import { buildMapMarkers, findPetByMarkerId } from '@/utils/map-markers'
+import { getPets } from '@/api/pet'
 
 // 设置自定义 TabBar 选中状态
 onShow(() => {
@@ -77,10 +84,15 @@ onShow(() => {
   if (tabBar) {
     tabBar.setData({ selected: 0 })
   }
+  // 检查登录状态
+  isLoggedIn.value = !!uni.getStorageSync('userInfo')
 })
 
 // 当前时间
 const currentTime = ref('12:51')
+
+// 登录状态
+const isLoggedIn = ref(false)
 
 // 地图中心点（模拟位置）
 const currentLat = ref(39.9842)
@@ -88,6 +100,12 @@ const currentLng = ref(116.3074)
 
 // 选中的宠物
 const selectedPet = ref<Pet | null>(null)
+
+// 游客显示的宠物名字列表
+const guestPetNames = computed(() => {
+  const names = nearbyPets.value.map(p => p.en)
+  return names.join(', ')
+})
 
 // 虚拟坐标系参数
 const ME: [number, number] = [44, 47]
@@ -111,9 +129,12 @@ function getStarStr(stars: number): string {
   return '★'.repeat(stars) + '☆'.repeat(5 - stars)
 }
 
+// 本地宠物数据（fallback）
+const localPets = ref(petsData)
+
 // 附近宠物列表
 const nearbyPets = computed(() => {
-  return petsData
+  return localPets.value
     .filter(p => p.xy && p.collected)
     .map(p => ({
       ...p,
@@ -228,6 +249,56 @@ onMounted(() => {
   border: 5rpx solid #141414;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+/* 游客地图样式 */
+.guest-map {
+  width: 100%;
+  height: 60vh;
+  min-height: 400rpx;
+  max-height: 800rpx;
+  border-radius: 52rpx;
+  border: 5rpx solid #141414;
+  background: #f2f1ec;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32rpx;
+  box-sizing: border-box;
+}
+
+.guest-pet-icon {
+  width: 120rpx;
+  height: 120rpx;
+  animation: float 4.5s ease-in-out infinite;
+}
+
+.guest-icon-img {
+  width: 100%;
+  height: 100%;
+}
+
+.guest-bubble {
+  background: #fff;
+  border: 4rpx solid #141414;
+  border-radius: 24rpx;
+  padding: 20rpx 32rpx;
+  text-align: center;
+}
+
+.guest-names {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #141414;
+  display: block;
+}
+
+.guest-hint {
+  font-size: 26rpx;
+  color: #8f8b83;
+  margin-top: 4rpx;
+  display: block;
 }
 
 .callout-container {

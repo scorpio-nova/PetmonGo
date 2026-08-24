@@ -11,6 +11,15 @@ export async function callCloud<T = any>(
   name: string,
   data?: Record<string, any>
 ): Promise<CloudResult<T>> {
+  // 检查云开发是否可用
+  if (!wx.cloud) {
+    console.error('wx.cloud is not available')
+    return {
+      code: -1,
+      message: '云开发未初始化'
+    }
+  }
+
   try {
     const res = await wx.cloud.callFunction({
       name,

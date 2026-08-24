@@ -1,0 +1,44 @@
+name: Deploy WeChat Mini Program
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: petmon-go-mini
+        run: npm install
+
+      - name: Build mini program
+        working-directory: petmon-go-mini
+        run: npm run build:mp-weixin
+
+      - name: Upload to WeChat
+        uses: cutejoker/miniprogram-upload@v1
+        with:
+          appid: ${{ secrets.MINI_PROGRAM_APPID }}
+          key: ${{ secrets.MINI_PROGRAM_KEY }}
+          path: petmon-go-mini/dist/build/mp-weixin
+          version: ${{ github.run_number }}.0.0
+          desc: 'Auto deploy from develop branch'
+          robot: 1
+          setting:
+            es6: true
+            minify: true
+            minifyWXSS: true
+          qrcode: true
