@@ -13,14 +13,16 @@ if [[ ! -d "$project_path" ]]; then
 fi
 
 private_key_path="${RUNNER_TEMP}/miniprogram-ci-private.key"
+output_log="${RUNNER_TEMP}/miniprogram-ci-output.log"
 cleanup() {
-  rm -f -- "$private_key_path"
+  rm -f -- "$private_key_path" "$output_log"
 }
 trap cleanup EXIT
 
 umask 077
 printf '%s' "$MINI_PROGRAM_PRIVATE_KEY" > "$private_key_path"
 
+set +e
 npx --yes miniprogram-ci@2.1.31 upload \
   --appid "$MINI_PROGRAM_APPID" \
   --project-path "$project_path" \
@@ -30,4 +32,16 @@ npx --yes miniprogram-ci@2.1.31 upload \
   --robot 1 \
   --threads 1 \
   --use-project-config true \
-  --verbose
+  --verbose 2>&1 | tee "$output_log"
+upload_status="${PIPESTATUS[0]}"
+set -e
+
+if [[ "$upload_status" -ne 0 ]]; then
+  diagnostic="$(tail -n 30 "$output_log")"
+  diagnostic="${diagnostic//"$MINI_PROGRAM_PRIVATE_KEY"/'[private key redacted]'}"
+  diagnostic="${diagnostic//'%'/'%25'}"
+  diagnostic="${diagnostic//$'\r'/'%0D'}"
+  diagnostic="${diagnostic//$'\n'/'%0A'}"
+  echo "::error title=WeChat upload failed::${diagnostic}"
+  exit "$upload_status"
+fi

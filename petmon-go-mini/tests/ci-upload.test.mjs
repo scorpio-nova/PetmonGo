@@ -36,6 +36,10 @@ for argument in "$@"; do
 done
 test -n "$key_path"
 cp "$key_path" "$CI_UPLOAD_KEY_SNAPSHOT"
+if [[ "\${CI_UPLOAD_FAIL:-}" == "1" ]]; then
+  echo "CodeError: simulated upload failure" >&2
+  exit 23
+fi
 `,
 )
 await chmod(fakeNpx, 0o755)
@@ -91,6 +95,29 @@ const workflow = await readFile(workflowFile, 'utf8')
 assert.match(workflow, /node-version:\s*18\b/, 'CI must use the miniprogram-ci-compatible Node 18 runtime')
 
 const privateKeyPath = path.join(runnerTemp, 'miniprogram-ci-private.key')
+await assert.rejects(access(privateKeyPath), { code: 'ENOENT' })
+
+const failedResult = spawnSync('bash', [uploadScript], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+  env: {
+    ...process.env,
+    PATH: `${binDir}:${process.env.PATH}`,
+    RUNNER_TEMP: runnerTemp,
+    GITHUB_RUN_NUMBER: '43',
+    MINI_PROGRAM_APPID: 'wx-test-appid',
+    MINI_PROGRAM_PRIVATE_KEY: privateKey,
+    MINI_PROGRAM_PROJECT_PATH: projectDir,
+    CI_UPLOAD_ARGS_LOG: argsLog,
+    CI_UPLOAD_KEY_SNAPSHOT: keySnapshot,
+    CI_UPLOAD_FAIL: '1',
+  },
+})
+
+assert.equal(failedResult.status, 23)
+assert.match(failedResult.stdout, /::error title=WeChat upload failed::.*simulated upload failure/)
+assert.equal(failedResult.stdout.includes('test-key-material'), false, 'private key leaked on upload failure')
+assert.equal(failedResult.stderr.includes('test-key-material'), false, 'private key leaked on upload failure')
 await assert.rejects(access(privateKeyPath), { code: 'ENOENT' })
 
 console.log('CI upload contract verified')
