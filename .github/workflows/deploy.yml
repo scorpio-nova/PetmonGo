@@ -32,7 +32,7 @@ jobs:
         uses: cutejoker/miniprogram-upload@v1
         with:
           appid: ${{ secrets.MINI_PROGRAM_APPID }}
-          key: ${{ secrets.MINI_PROGRAM_KEY }}
+          key: ${{ secrets.MINI_PROGRAM_PRIVATE_KEY }}
           path: petmon-go-mini/dist/build/mp-weixin
           version: ${{ github.run_number }}.0.0
           desc: 'Auto deploy from develop branch'
