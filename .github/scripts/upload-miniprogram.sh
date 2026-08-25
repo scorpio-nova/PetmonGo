@@ -28,4 +28,6 @@ npx --yes miniprogram-ci@2.1.31 upload \
   --upload-version "0.1.${GITHUB_RUN_NUMBER}" \
   --upload-description "Auto deploy from develop branch" \
   --robot 1 \
-  --use-project-config true
+  --threads 1 \
+  --use-project-config true \
+  --verbose

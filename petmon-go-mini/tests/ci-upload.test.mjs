@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process'
 const testDir = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(testDir, '../..')
 const uploadScript = path.join(repoRoot, '.github/scripts/upload-miniprogram.sh')
+const workflowFile = path.join(repoRoot, '.github/workflows/deploy.yml')
 const tempDir = await mkdtemp(path.join(os.tmpdir(), 'petmongo-ci-upload-'))
 const binDir = path.join(tempDir, 'bin')
 const runnerTemp = path.join(tempDir, 'runner')
@@ -77,11 +78,17 @@ const expectedArgs = [
   'Auto deploy from develop branch',
   '--robot',
   '1',
+  '--threads',
+  '1',
   '--use-project-config',
   'true',
+  '--verbose',
 ]
 assert.deepEqual(args, expectedArgs)
 assert.equal(await readFile(keySnapshot, 'utf8'), privateKey)
+
+const workflow = await readFile(workflowFile, 'utf8')
+assert.match(workflow, /node-version:\s*18\b/, 'CI must use the miniprogram-ci-compatible Node 18 runtime')
 
 const privateKeyPath = path.join(runnerTemp, 'miniprogram-ci-private.key')
 await assert.rejects(access(privateKeyPath), { code: 'ENOENT' })
