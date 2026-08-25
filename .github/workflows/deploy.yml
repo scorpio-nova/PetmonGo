@@ -37,8 +37,4 @@ jobs:
           version: ${{ github.run_number }}.0.0
           desc: 'Auto deploy from develop branch'
           robot: 1
-          setting:
-            es6: true
-            minify: true
-            minifyWXSS: true
           qrcode: true
