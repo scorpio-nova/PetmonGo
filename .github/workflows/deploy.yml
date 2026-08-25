@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: petmon-go-mini
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build mini program
         working-directory: petmon-go-mini
