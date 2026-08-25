@@ -11,11 +11,13 @@ const uploadScript = path.join(repoRoot, '.github/scripts/upload-miniprogram.sh'
 const tempDir = await mkdtemp(path.join(os.tmpdir(), 'petmongo-ci-upload-'))
 const binDir = path.join(tempDir, 'bin')
 const runnerTemp = path.join(tempDir, 'runner')
+const projectDir = path.join(tempDir, 'mini-program-project')
 const argsLog = path.join(tempDir, 'npx-args.txt')
 const keySnapshot = path.join(tempDir, 'private-key-snapshot.txt')
 
 await mkdir(binDir)
 await mkdir(runnerTemp)
+await mkdir(projectDir)
 
 const fakeNpx = path.join(binDir, 'npx')
 await writeFile(
@@ -48,6 +50,7 @@ const result = spawnSync('bash', [uploadScript], {
     GITHUB_RUN_NUMBER: '42',
     MINI_PROGRAM_APPID: 'wx-test-appid',
     MINI_PROGRAM_PRIVATE_KEY: privateKey,
+    MINI_PROGRAM_PROJECT_PATH: projectDir,
     CI_UPLOAD_ARGS_LOG: argsLog,
     CI_UPLOAD_KEY_SNAPSHOT: keySnapshot,
   },
@@ -65,7 +68,7 @@ const expectedArgs = [
   '--appid',
   'wx-test-appid',
   '--project-path',
-  'petmon-go-mini/dist/build/mp-weixin',
+  projectDir,
   '--private-key-path',
   path.join(runnerTemp, 'miniprogram-ci-private.key'),
   '--upload-version',
