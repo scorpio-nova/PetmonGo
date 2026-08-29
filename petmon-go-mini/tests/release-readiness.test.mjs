@@ -27,6 +27,10 @@ for (const iconName of ['cat.png', 'dog.png']) {
   expect(fs.existsSync(path.join(miniprogramRoot, 'static/icons', iconName)), `missing map icon: ${iconName}`)
 }
 
+for (const fontName of ['gaegu-300.woff2', 'gaegu-700.woff2', 'long-cang.woff2', 'OFL.txt']) {
+  expect(fs.existsSync(path.join(miniprogramRoot, 'static/fonts', fontName)), `missing bundled font asset: ${fontName}`)
+}
+
 const mediaExtensions = new Set([
   '.jpg', '.jpeg', '.png', '.svg', '.webp', '.gif', '.flac', '.m4a', '.ogg', '.ape',
   '.amr', '.wma', '.wav', '.mp3', '.mp4', '.aac', '.aiff', '.caf'
