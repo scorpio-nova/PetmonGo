@@ -22,7 +22,7 @@
               @click="openPetDetail(pet.id)"
             >
               <view class="pet-avatar-wrapper">
-                <image class="pet-avatar" :src="pet.photo" mode="aspectFill" />
+              <image class="pet-avatar" :src="photoFor(pet)" mode="aspectFill" />
               </view>
               <text class="pet-name">{{ pet.en }}</text>
             </view>
@@ -55,7 +55,7 @@
       <view class="section">
         <text class="section-title">宠物日志 · pet log</text>
         <view class="log-card">
-          <image class="log-image" src="/static/pets/catt-1.jpg" mode="aspectFill" />
+          <image class="log-image" :src="photoForId('cat1')" mode="aspectFill" />
           <view class="log-info">
             <text class="log-text">Catt 今天中午在花坛边晒肚皮，被 3 个路人拍了照。摸鱼一整天。</text>
             <text class="log-meta">by Momo · 今天 14:02</text>
@@ -67,7 +67,7 @@
       <view class="section">
         <text class="section-title">天使故事 · angel story</text>
         <view class="angel-card">
-          <image class="angel-image" src="/static/pets/scar-1.jpg" mode="aspectFill" />
+          <image class="angel-image" :src="photoForId('cat4')" mode="aspectFill" />
           <view class="angel-info">
             <text class="angel-text">刀疤在这个街区生活了 6 年，去年冬天去了喵星。大家还会在老地方给它留小鱼干。</text>
             <text class="angel-meta">by 楼下阿姨 · 3 天前</text>
@@ -114,6 +114,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { petsData } from '@/data/pets'
 import { eventsData } from '@/data/events'
+import { getPetPhoto, loadPetPhotos } from '@/utils/pet-photo'
 
 // 设置自定义 TabBar 选中状态
 onShow(() => {
@@ -131,6 +132,16 @@ const currentTime = ref('12:51')
 const nearbyPets = computed(() => {
   return petsData.filter(p => p.collected).slice(0, 5)
 })
+const photoOverrides = ref<Record<string, string>>({})
+
+function photoFor(pet: (typeof petsData)[number]): string {
+  return getPetPhoto(pet, photoOverrides.value)
+}
+
+function photoForId(id: string): string {
+  const pet = petsData.find(item => item.id === id)
+  return pet ? photoFor(pet) : ''
+}
 
 // 事件列表
 const events = computed(() => eventsData)
@@ -158,6 +169,9 @@ function updateTime() {
 onMounted(() => {
   updateTime()
   setInterval(updateTime, 60000)
+  void loadPetPhotos([...nearbyPets.value, ...petsData.filter(pet => pet.id === 'cat1' || pet.id === 'cat4')]).then((photos) => {
+    photoOverrides.value = photos
+  })
 })
 </script>
 

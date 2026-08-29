@@ -50,6 +50,22 @@ python3 -m http.server
 浏览器打开 `petmon go.dc.html` 即可完整体验。
 （首次使用拍照识别需联网下载约 30MB 的 AI 模型，之后本地缓存。）
 
+## 🧪 小程序 API / 后端测试
+
+当前微信云开发版本（`petmon-go-mini`）的接口测试方案、验收门禁和真实云环境待办见：
+
+- [`docs/api-backend-testing-plan.md`](docs/api-backend-testing-plan.md) — 测试方案与用例矩阵
+- [`TODO.md`](TODO.md) — 实时进度、阶段日志和下一检查点
+
+在小程序目录运行本地检查：
+
+```bash
+cd petmon-go-mini
+npm run type-check
+npm run test:api-types
+npm run test:cloudfunctions
+```
+
 ---
 
 <p align="center">🐱 遇见每一只，记住每一只 🐶</p>

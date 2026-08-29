@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["tests/api-types.test.ts", "src/env.d.ts", "shims-uni.d.ts"]
+}

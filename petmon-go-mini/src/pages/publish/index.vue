@@ -38,6 +38,15 @@
 </template>
 
 <script setup lang="ts">
+import { login } from '@/api/user'
+
+interface WechatUserProfile {
+  userInfo: {
+    nickName: string
+    avatarUrl: string
+  }
+}
+
 // 返回上一页
 function goBack() {
   uni.navigateBack()
@@ -47,7 +56,7 @@ function goBack() {
 async function doLogin(): Promise<boolean> {
   try {
     // 调用微信获取用户信息接口
-    const userRes = await new Promise<any>((resolve, reject) => {
+    const userRes = await new Promise<WechatUserProfile>((resolve, reject) => {
       wx.getUserProfile({
         desc: '用于完善用户资料',
         success: resolve,
@@ -55,11 +64,10 @@ async function doLogin(): Promise<boolean> {
       })
     })
 
-    // 调用云函数登录
-    const loginRes = await wx.cloud.callFunction({ name: 'login' })
-    if (loginRes.result && loginRes.result.code === 0) {
+    const loginRes = await login()
+    if (loginRes) {
       const userInfo = {
-        ...loginRes.result.data.userInfo,
+        ...loginRes.userInfo,
         nickName: userRes.userInfo.nickName,
         avatarUrl: userRes.userInfo.avatarUrl
       }

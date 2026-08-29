@@ -32,7 +32,7 @@ export function formatRelativeTime(utcString: string): string {
 // UTC 时间字符串 → 日期部分（如"2024-01-15"）
 export function formatDate(utcString: string): string {
   const date = new Date(utcString)
-  return date.toISOString().split('T')[0]
+  return date.toISOString().slice(0, 10)
 }
 
 // UTC 时间字符串 → 时间部分（如"14:30"）
