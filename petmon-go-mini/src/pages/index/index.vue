@@ -67,6 +67,11 @@
         <text class="pet-stars">{{ getStarStr(pet.stars) }}</text>
       </view>
     </scroll-view>
+
+    <!-- 独立于原生 tabBar 的中心发布按钮；保持原有尺寸和定位，避免 SVG 图标替换后加号丢失。 -->
+    <view class="publish-btn" @click="goPublish">
+      <image class="publish-icon" src="/static/icons/c-cross-white.svg" mode="aspectFit" />
+    </view>
   </view>
 </template>
 
@@ -427,9 +432,8 @@ onMounted(() => {
 }
 
 .publish-icon {
-  color: #fff;
-  font-size: 72rpx;
-  font-weight: 700;
-  line-height: 1;
+  width: 72rpx;
+  height: 72rpx;
+  display: block;
 }
 </style>
