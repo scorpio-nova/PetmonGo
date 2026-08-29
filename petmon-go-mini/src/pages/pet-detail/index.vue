@@ -149,6 +149,8 @@ onLoad((options) => {
 
 .detail-content {
   padding: 12rpx 52rpx 56rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .photo-section {
@@ -159,16 +161,18 @@ onLoad((options) => {
 
 .photo-frame {
   position: relative;
-  width: 420rpx;
+  width: 100%;
+  max-width: 620rpx;
   height: 380rpx;
   padding: 16rpx;
+  box-sizing: border-box;
 }
 
 .photo-frame::before {
   content: '';
   position: absolute;
   inset: 0;
-  border: 14rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 18rpx;
 }
 
@@ -176,6 +180,7 @@ onLoad((options) => {
   width: 100%;
   height: 100%;
   border-radius: 12rpx;
+  object-fit: cover;
 }
 
 .info-section {
@@ -186,6 +191,7 @@ onLoad((options) => {
   display: flex;
   align-items: baseline;
   gap: 20rpx;
+  flex-wrap: wrap;
 }
 
 .pet-en {
@@ -276,9 +282,11 @@ onLoad((options) => {
   display: flex;
   align-items: center;
   gap: 24rpx;
+  width: 100%;
+  box-sizing: border-box;
   padding: 28rpx 32rpx;
   background: #fff8e2;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 20rpx;
 }
 
@@ -288,6 +296,7 @@ onLoad((options) => {
 
 .angel-info {
   flex: 1;
+  min-width: 0;
 }
 
 .angel-title {

@@ -27,10 +27,10 @@ for (const iconName of ['cat.png', 'dog.png', 'c-cross-white.svg']) {
   expect(fs.existsSync(path.join(miniprogramRoot, 'static/icons', iconName)), `missing packaged icon: ${iconName}`)
 }
 
-const homeMarkup = fs.readFileSync(path.join(miniprogramRoot, 'pages/index/index.wxml'), 'utf8')
-const assetManifest = fs.readFileSync(path.join(miniprogramRoot, 'common/assets.js'), 'utf8')
-expect(homeMarkup.includes('publish-btn'), 'home page must render the central publish button')
-expect(assetManifest.includes('c-cross-white.svg'), 'central publish button must use the white SVG plus icon')
+const tabBarConfig = appConfig.tabBar || {}
+const publishTab = tabBarConfig.list?.find(item => item.pagePath === 'pages/publish/index')
+expect(publishTab, 'tabBar must include the publish entry')
+expect(publishTab?.iconPath === 'static/tabbar/publish.png', 'publish tab must use the PNG plus icon')
 
 for (const fontName of ['gaegu-300.woff2', 'gaegu-700.woff2', 'long-cang.woff2', 'OFL.txt']) {
   expect(fs.existsSync(path.join(miniprogramRoot, 'static/fonts', fontName)), `missing bundled font asset: ${fontName}`)

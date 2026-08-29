@@ -156,6 +156,8 @@ onShow(() => {
 
 .inbox-content {
   padding: 20rpx 44rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .empty-state {

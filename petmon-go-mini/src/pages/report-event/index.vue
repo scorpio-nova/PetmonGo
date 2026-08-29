@@ -140,6 +140,8 @@ async function submitEvent() {
 
 .report-content {
   padding: 20rpx 44rpx 60rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .section {

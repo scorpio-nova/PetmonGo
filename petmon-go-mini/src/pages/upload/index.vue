@@ -182,6 +182,8 @@ onLoad((options) => {
 
 .upload-content {
   padding: 20rpx 52rpx 56rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .photo-upload {
@@ -200,7 +202,7 @@ onLoad((options) => {
   content: '';
   position: absolute;
   inset: 0;
-  border: 14rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 14rpx;
 }
 
