@@ -37,6 +37,24 @@ uni.$hideToast = hideToast;
 onLaunch(() => {
   console.log("App Launch");
 
+  // 微信小程序不支持网页里的远程 @font-face；尝试通过运行时 API
+  // 加载字体，失败时由 CSS fallback 保证文字仍然可见。
+  const loadFontFace = (uni as any).loadFontFace as ((options: Record<string, any>) => void) | undefined;
+  if (loadFontFace) {
+    loadFontFace({
+      family: 'Gaegu',
+      source: 'url("https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2")',
+      global: true,
+      fail: (err: unknown) => console.warn('Gaegu font unavailable, using fallback', err)
+    });
+    loadFontFace({
+      family: 'Long Cang',
+      source: 'url("https://fonts.gstatic.com/s/longcang/v20/LYjAdGP8kkQ-IF3dMPGP_kYZW8g.woff2")',
+      global: true,
+      fail: (err: unknown) => console.warn('Long Cang font unavailable, using fallback', err)
+    });
+  }
+
   // 初始化云开发
   if (wx.cloud) {
     wx.cloud.init({
@@ -70,30 +88,9 @@ onHide(() => {
 
 <style>
 /* 全局样式 */
-@font-face {
-  font-family: 'Gaegu';
-  src: url('https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Gaegu';
-  src: url('https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Long Cang';
-  src: url('https://fonts.gstatic.com/s/longcang/v20/LYjAdGP8kkQ-IF3dMPGP_kYZW8g.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-
 page {
   background: #fffdf8;
-  font-family: 'Gaegu', 'Long Cang', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Gaegu', 'Long Cang', 'Chalkboard SE', 'Bradley Hand', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* 手绘风格边框 */
