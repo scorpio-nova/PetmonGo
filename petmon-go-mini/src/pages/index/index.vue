@@ -50,7 +50,7 @@
         @click="openPetDetail(pet.id)"
       >
         <view class="pet-avatar-wrapper">
-          <image class="pet-avatar" :src="pet.photo" mode="aspectFill" />
+          <image class="pet-avatar" :src="photoFor(pet)" mode="aspectFill" />
         </view>
         <view class="pet-info">
           <view class="pet-name-row">
@@ -77,6 +77,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { petsData, type Pet } from '@/data/pets'
 import { buildMapMarkers, findPetByMarkerId } from '@/utils/map-markers'
 import { getPets } from '@/api/pet'
+import { getPetPhoto, loadPetPhotos } from '@/utils/pet-photo'
 
 // 设置自定义 TabBar 选中状态
 onShow(() => {
@@ -132,6 +133,11 @@ function getStarStr(stars: number): string {
 
 // 本地宠物数据（fallback）
 const localPets = ref(petsData)
+const photoOverrides = ref<Record<string, string>>({})
+
+function photoFor(pet: Pet): string {
+  return getPetPhoto(pet, photoOverrides.value)
+}
 
 // 附近宠物列表
 const nearbyPets = computed(() => {
@@ -184,6 +190,9 @@ function updateTime() {
 onMounted(() => {
   updateTime()
   setInterval(updateTime, 60000)
+  void loadPetPhotos(localPets.value.filter(p => p.xy && p.collected)).then((photos) => {
+    photoOverrides.value = photos
+  })
 })
 </script>
 

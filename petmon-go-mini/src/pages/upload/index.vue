@@ -81,7 +81,8 @@ function choosePhoto() {
     sizeType: ['compressed'],
     sourceType: ['album', 'camera'],
     success: (res) => {
-      photo.value = res.tempFilePaths[0]
+      const [firstPath] = res.tempFilePaths
+      if (firstPath) photo.value = firstPath
     }
   })
 }

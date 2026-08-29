@@ -15,7 +15,7 @@
         <view class="photo-frame">
           <image
             class="pet-photo"
-            :src="pet.photo"
+            :src="photoFor(pet)"
             mode="aspectFill"
           />
         </view>
@@ -77,8 +77,14 @@
 import { ref, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { petsData, type Pet } from '@/data/pets'
+import { getPetPhoto, loadPetPhotos } from '@/utils/pet-photo'
 
 const pet = ref<Pet | null>(null)
+const photoOverrides = ref<Record<string, string>>({})
+
+function photoFor(currentPet: Pet): string {
+  return getPetPhoto(currentPet, photoOverrides.value)
+}
 
 // 星级字符串
 function getStarStr(stars: number): string {
@@ -100,6 +106,11 @@ function confirmPet() {
 onLoad((options) => {
   if (options?.id) {
     pet.value = petsData.find(p => p.id === options.id) || null
+    if (pet.value) {
+      void loadPetPhotos([pet.value]).then((photos) => {
+        photoOverrides.value = photos
+      })
+    }
   }
 })
 </script>

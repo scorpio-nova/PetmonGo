@@ -26,4 +26,8 @@ npm run build:mp-weixin
 2. 重新导入 `petmon-go-mini` 根目录。
 3. 在“详情 → 本地设置”选择稳定基础库（建议 3.17.1 或更低的已安装版本），再点击“编译”。
 
+本目录的 `project.private.config.json` 也已固定为 `3.17.1`；它会覆盖
+`project.config.json` 的同名设置。该文件属于本机开发者工具配置，不应提交到
+团队仓库。
+
 `simulator launch failed` 通常是前一个根目录解析失败的连带错误；先确保项目配置解析到 `dist/build/mp-weixin/`，再判断是否仍有模拟器问题。

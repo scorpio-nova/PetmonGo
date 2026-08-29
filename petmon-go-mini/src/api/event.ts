@@ -2,8 +2,10 @@
 
 import { callCloud } from '@/utils/cloud'
 
+export type EventType = '虐猫' | '丢失' | '抓人' | '咬人'
+
 export interface AddEventParams {
-  type: '虐猫' | '丢失' | '抓人' | '咬人'
+  type: EventType
   title: string
   desc?: string
   place: string

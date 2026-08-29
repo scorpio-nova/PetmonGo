@@ -103,3 +103,31 @@ A: 检查集合权限设置，确保用户有读写权限
 
 ### Q: 内容审核不通过
 A: 检查是否在云开发控制台开启了内容安全功能
+
+## 九、宠物图片远程加载与本地缓存
+
+小程序已经支持“云存储资源 + 客户端本地缓存 + 本地 fallback”。代码位置：
+
+- `src/config/pet-photo-resources.ts`：宠物图片资源清单
+- `src/utils/resource-cache.ts`：临时 URL、下载、保存和版本化缓存
+- `src/utils/pet-photo.ts`：页面图片适配
+
+当前清单中的 `fileId` 为空，页面会继续使用 `src/static/pets` 中的本地图片。配置真实云资源时：
+
+1. 在**测试云环境**上传六张宠物照片，例如 `pet-assets/v1/cat1.jpg`。
+2. 记录每个文件返回的 `fileID`。
+3. 将 `src/config/pet-photo-resources.ts` 中对应项改为：
+
+   ```ts
+   cat1: {
+     version: 'v1',
+     fileId: 'cloud://<env-id>....',
+     fallback: '/static/pets/catt-1.jpg'
+   }
+   ```
+
+4. 在微信公众平台配置下载合法域名；云开发临时 URL 必须使用 HTTPS。
+5. 重新编译并在开发者工具/真机验证首次下载、缓存命中、断网 fallback 和版本升级。
+6. 确认无误后再把同一版本资源上传到生产环境，并使用生产环境的 `fileID`。
+
+不要把管理密钥、云 API 密钥或长期有效签名下发到客户端。资源文件名和 `fileID` 可以进入前端清单，访问权限仍由云存储规则控制。

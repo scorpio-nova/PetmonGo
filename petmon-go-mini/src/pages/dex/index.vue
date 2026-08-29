@@ -29,7 +29,7 @@
           <view class="pet-card" :class="{ 'angel-card': pet.tag === '天使' }">
             <image
               class="pet-avatar"
-              :src="pet.photo"
+              :src="photoFor(pet)"
               mode="aspectFill"
             />
             <view class="pet-info">
@@ -50,6 +50,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { petsData } from '@/data/pets'
+import { getPetPhoto, loadPetPhotos } from '@/utils/pet-photo'
 
 // 设置自定义 TabBar 选中状态
 onShow(() => {
@@ -67,6 +68,11 @@ const currentTime = ref('12:51')
 const collectedPets = computed(() => {
   return petsData.filter(p => p.collected)
 })
+const photoOverrides = ref<Record<string, string>>({})
+
+function photoFor(pet: (typeof petsData)[number]): string {
+  return getPetPhoto(pet, photoOverrides.value)
+}
 
 // 是否有新动态
 const hasNews = computed(() => {
@@ -89,6 +95,9 @@ function updateTime() {
 onMounted(() => {
   updateTime()
   setInterval(updateTime, 60000)
+  void loadPetPhotos(collectedPets.value).then((photos) => {
+    photoOverrides.value = photos
+  })
 })
 </script>
 

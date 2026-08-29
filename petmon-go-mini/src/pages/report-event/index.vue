@@ -59,9 +59,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { addEvent, type EventType } from '@/api/event'
 
-const eventTypes = ['虐猫', '丢失', '抓人', '咬人']
-const eventType = ref('丢失')
+const eventTypes: EventType[] = ['虐猫', '丢失', '抓人', '咬人']
+const eventType = ref<EventType>('丢失')
 const eventDesc = ref('')
 
 // 返回上一页
@@ -79,19 +80,16 @@ async function submitEvent() {
   uni.$showToast('发布中...', 'loading', 0)
 
   try {
-    const res = await wx.cloud.callFunction({
-      name: 'addEvent',
-      data: {
-        type: eventType.value,
-        title: eventType.value === '丢失' ? '宠物丢失' : eventType.value + '提醒',
-        desc: eventDesc.value,
-        place: 'Maple St 街角',
-      }
+    const eventId = await addEvent({
+      type: eventType.value,
+      title: eventType.value === '丢失' ? '宠物丢失' : eventType.value + '提醒',
+      desc: eventDesc.value,
+      place: 'Maple St 街角'
     })
 
     uni.$hideToast()
 
-    if (res.result && res.result.code === 0) {
+    if (eventId) {
       uni.$showToast('已发布，附近用户将收到提醒 🐾', 'success')
       setTimeout(() => {
         uni.switchTab({
@@ -99,7 +97,7 @@ async function submitEvent() {
         })
       }, 1500)
     } else {
-      uni.$showToast('发布失败：' + (res.result?.message || '未知错误'), 'error')
+      uni.$showToast('发布失败，请稍后重试', 'error')
     }
   } catch (err) {
     uni.$hideToast()
