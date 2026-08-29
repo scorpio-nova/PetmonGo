@@ -38,7 +38,16 @@
 </template>
 
 <script setup lang="ts">
+import { onShow } from '@dcloudio/uni-app'
 import { login } from '@/api/user'
+
+onShow(() => {
+  const page = getCurrentPages().pop()
+  const tabBar = page && typeof page.getTabBar === 'function' ? page.getTabBar() : null
+  if (tabBar) {
+    tabBar.setData({ selected: 2 })
+  }
+})
 
 interface WechatUserProfile {
   userInfo: {
@@ -49,7 +58,7 @@ interface WechatUserProfile {
 
 // 返回上一页
 function goBack() {
-  uni.navigateBack()
+  uni.switchTab({ url: '/pages/index/index' })
 }
 
 // 登录并获取用户信息
@@ -154,6 +163,8 @@ function goPubEvent() {
 
 .publish-content {
   padding: 32rpx 52rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .publish-grid {
@@ -165,12 +176,14 @@ function goPubEvent() {
   flex: 1;
   position: relative;
   padding: 40rpx 20rpx;
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16rpx;
   background: #fff;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 24rpx;
 }
 

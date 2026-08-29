@@ -1,12 +1,5 @@
 <template>
   <view class="container">
-    <!-- 自定义导航栏 -->
-    <view class="nav-bar">
-      <view class="nav-title">
-        <text class="nav-subtitle">nearby 附近</text>
-      </view>
-    </view>
-
     <!-- 地图区域 -->
     <view class="map-section">
       <view class="location-info">
@@ -15,30 +8,51 @@
         <text class="location-text">只毛孩子</text>
       </view>
 
-      <!-- 游客模式：显示区域信息 -->
-      <view v-if="!isLoggedIn" class="guest-map">
-        <view class="guest-pet-icon">
-          <image class="guest-icon-img" src="/static/icons/cat.png" mode="aspectFit" />
+      <view class="map-stage">
+        <!-- 游客模式：显示区域信息 -->
+        <view v-if="!isLoggedIn" class="guest-map">
+          <view class="guest-pet-icon">
+            <image class="guest-icon-img" src="/static/icons/cat.png" mode="aspectFit" />
+          </view>
+          <view class="guest-bubble">
+            <text class="guest-names">{{ guestPetNames }}</text>
+            <text class="guest-hint">在此附近</text>
+          </view>
         </view>
-        <view class="guest-bubble">
-          <text class="guest-names">{{ guestPetNames }}</text>
-          <text class="guest-hint">在此附近</text>
+
+        <!-- 登录用户：显示精确位置 -->
+        <map
+          v-else
+          class="pet-map"
+          :latitude="currentLat"
+          :longitude="currentLng"
+          :markers="mapMarkers"
+          :scale="16"
+          :polyline="[]"
+          show-location
+          @markertap="onMarkerTap"
+        >
+        </map>
+
+        <!-- 悬浮在地图上的搜索与地点筛选 -->
+        <view class="map-overlay">
+          <view class="map-search">
+            <text class="search-icon">⌕</text>
+            <input v-model="searchQuery" class="search-input" placeholder="搜索地点、宠物或活动" confirm-type="search" />
+          </view>
+          <scroll-view class="quick-actions" scroll-x>
+            <view
+              v-for="action in quickActions"
+              :key="action.label"
+              class="quick-action"
+              @click="searchQuery = action.label"
+            >
+              <text class="quick-icon">{{ action.icon }}</text>
+              <text class="quick-label">{{ action.label }}</text>
+            </view>
+          </scroll-view>
         </view>
       </view>
-
-      <!-- 登录用户：显示精确位置 -->
-      <map
-        v-else
-        class="pet-map"
-        :latitude="currentLat"
-        :longitude="currentLng"
-        :markers="mapMarkers"
-        :scale="16"
-        :polyline="[]"
-        show-location
-        @markertap="onMarkerTap"
-      >
-      </map>
     </view>
 
     <!-- 附近宠物列表 -->
@@ -64,10 +78,6 @@
       </view>
     </scroll-view>
 
-    <!-- 独立于原生 tabBar 的中心发布按钮；保持原有尺寸和定位，避免 SVG 图标替换后加号丢失。 -->
-    <view class="publish-btn" @click="goPublish">
-      <image class="publish-icon" src="/static/icons/c-cross-white.svg" mode="aspectFit" />
-    </view>
   </view>
 </template>
 
@@ -99,6 +109,14 @@ const isLoggedIn = ref(false)
 // 地图中心点（模拟位置）
 const currentLat = ref(39.9842)
 const currentLng = ref(116.3074)
+const searchQuery = ref('')
+
+const quickActions = [
+  { icon: '✚', label: '医院' },
+  { icon: '☕', label: '餐厅' },
+  { icon: '⌖', label: '景点' },
+  { icon: '⚑', label: '活动组队' }
+]
 
 // 选中的宠物
 const selectedPet = ref<Pet | null>(null)
@@ -174,13 +192,6 @@ function openPetDetail(id: string) {
   })
 }
 
-// 去发布
-function goPublish() {
-  uni.navigateTo({
-    url: '/pages/publish/index'
-  })
-}
-
 // 获取当前时间
 function updateTime() {
   const now = new Date()
@@ -200,7 +211,7 @@ onMounted(() => {
 .container {
   min-height: 100vh;
   background: #fffdf8;
-  padding-bottom: 120rpx;
+  padding-bottom: 0;
   overflow-x: hidden;
 }
 
@@ -229,16 +240,28 @@ onMounted(() => {
 }
 
 .map-section {
-  padding: 0 32rpx;
+  position: relative;
+  padding: 0;
   box-sizing: border-box;
 }
 
 .location-info {
+  position: absolute;
+  top: 180rpx;
+  left: 32rpx;
+  right: 32rpx;
+  z-index: 11;
   display: flex;
   align-items: center;
   gap: 8rpx;
-  padding: 16rpx 0;
+  padding: 0;
   flex-wrap: wrap;
+}
+
+.map-stage {
+  position: relative;
+  width: 100%;
+  height: 100vh;
 }
 
 .location-text {
@@ -254,11 +277,9 @@ onMounted(() => {
 
 .pet-map {
   width: 100%;
-  height: 60vh;
-  min-height: 400rpx;
-  max-height: 800rpx;
-  border-radius: 52rpx;
-  border: 5rpx solid #141414;
+  height: 100%;
+  border-radius: 0;
+  border: 0;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -266,11 +287,9 @@ onMounted(() => {
 /* 游客地图样式 */
 .guest-map {
   width: 100%;
-  height: 60vh;
-  min-height: 400rpx;
-  max-height: 800rpx;
-  border-radius: 52rpx;
-  border: 5rpx solid #141414;
+  height: 100%;
+  border-radius: 0;
+  border: 0;
   background: #f2f1ec;
   display: flex;
   flex-direction: column;
@@ -311,6 +330,72 @@ onMounted(() => {
   color: #8f8b83;
   margin-top: 4rpx;
   display: block;
+}
+
+.map-search {
+  display: flex;
+  align-items: center;
+  height: 76rpx;
+  margin: 0;
+  padding: 0 24rpx;
+  background: #fff;
+  border: 4rpx solid #141414;
+  border-radius: 40rpx;
+  box-sizing: border-box;
+}
+
+.map-overlay {
+  position: absolute;
+  left: 32rpx;
+  right: 32rpx;
+  bottom: calc(100rpx + env(safe-area-inset-bottom));
+  z-index: 10;
+}
+
+.search-icon {
+  font-size: 44rpx;
+  line-height: 1;
+  margin-right: 12rpx;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: 28rpx;
+}
+
+.quick-actions {
+  width: 100%;
+  white-space: nowrap;
+  padding: 16rpx 0 8rpx;
+  box-sizing: border-box;
+}
+
+.quick-action {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 142rpx;
+  height: 62rpx;
+  margin-right: 14rpx;
+  background: #fff;
+  border: 3rpx solid #141414;
+  border-radius: 32rpx;
+  box-sizing: border-box;
+}
+
+.quick-icon {
+  font-size: 28rpx;
+  color: #4e4b45;
+  line-height: 1;
+  margin-right: 8rpx;
+}
+
+.quick-label {
+  font-size: 24rpx;
+  color: #4e4b45;
 }
 
 .callout-container {
@@ -421,27 +506,4 @@ onMounted(() => {
   letter-spacing: 2rpx;
 }
 
-.publish-btn {
-  position: fixed;
-  // 原生 TabBar 高度约 196rpx，按钮垂直居中于底栏。
-  bottom: 44rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 108rpx;
-  height: 108rpx;
-  background: #141414;
-  border-radius: 50%;
-  border: 6rpx solid #fffdf8;
-  box-shadow: 0 8rpx 0 rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.publish-icon {
-  width: 72rpx;
-  height: 72rpx;
-  display: block;
-}
 </style>

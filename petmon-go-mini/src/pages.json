@@ -103,6 +103,12 @@
         "selectedIconPath": "static/tabbar/explore-active.png"
       },
       {
+        "pagePath": "pages/publish/index",
+        "text": "发布",
+        "iconPath": "static/tabbar/publish.png",
+        "selectedIconPath": "static/tabbar/publish.png"
+      },
+      {
         "pagePath": "pages/dex/index",
         "text": "图鉴",
         "iconPath": "static/tabbar/dex.png",

@@ -121,7 +121,7 @@ onShow(() => {
   const page = getCurrentPages().pop()
   const tabBar = page && typeof page.getTabBar === 'function' ? page.getTabBar() : null
   if (tabBar) {
-    tabBar.setData({ selected: 3 })
+    tabBar.setData({ selected: 4 })
   }
   // 检查未读消息
   checkUnread()
@@ -211,6 +211,8 @@ onMounted(() => {
 
 .me-content {
   padding: 20rpx 44rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -327,7 +329,8 @@ onMounted(() => {
   display: flex;
   padding: 8rpx 0;
   background: #fff;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
+  box-sizing: border-box;
   border-radius: 16rpx;
 }
 
@@ -380,7 +383,8 @@ onMounted(() => {
   position: relative;
   padding: 40rpx 32rpx;
   background: #fff8e2;
-  border: 8rpx solid #141414;
+  border: 4rpx solid #141414;
+  box-sizing: border-box;
   border-radius: 24rpx;
 }
 

@@ -100,6 +100,8 @@ onLoad((options) => {
 
 .detail-content {
   padding: 16rpx 52rpx 56rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .event-header {
@@ -115,12 +117,14 @@ onLoad((options) => {
 
 .event-info {
   flex: 1;
+  min-width: 0;
 }
 
 .event-title-row {
   display: flex;
   align-items: baseline;
   gap: 16rpx;
+  flex-wrap: wrap;
 }
 
 .event-title {
@@ -201,9 +205,12 @@ onLoad((options) => {
 
 .warn-card {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 32rpx 36rpx;
   background: #fff3ee;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 20rpx;
 }
 
@@ -217,5 +224,6 @@ onLoad((options) => {
   font-size: 32rpx;
   color: #3a3a3a;
   line-height: 1.45;
+  overflow-wrap: break-word;
 }
 </style>

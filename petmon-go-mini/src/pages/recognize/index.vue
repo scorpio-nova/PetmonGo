@@ -96,14 +96,14 @@ function choosePhoto() {
 .nav-back { padding: 8rpx; }
 .back-arrow { font-size: 56rpx; color: #141414; }
 .nav-subtitle { font-size: 34rpx; color: #8f8b83; }
-.content { padding: 32rpx 52rpx; }
-.photo-frame { position: relative; width: 100%; height: 620rpx; border: 10rpx solid #141414; border-radius: 24rpx; background: #f8f7f2; overflow: hidden; box-sizing: border-box; }
+.content { padding: 32rpx 52rpx; box-sizing: border-box; overflow-x: hidden; }
+.photo-frame { position: relative; width: 100%; max-width: 620rpx; height: 620rpx; margin: 0 auto; border: 4rpx solid #141414; border-radius: 24rpx; background: #f8f7f2; overflow: hidden; box-sizing: border-box; }
 .placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16rpx; }
 .camera-icon { font-size: 96rpx; }
 .placeholder-title { font-size: 38rpx; font-weight: 700; }
 .placeholder-hint { font-size: 28rpx; color: #8f8b83; }
 .preview-image { width: 100%; height: 100%; }
-.status-card { margin-top: 28rpx; padding: 24rpx 28rpx; border: 5rpx solid #141414; border-radius: 20rpx; background: #fff; }
+.status-card { width: 100%; max-width: 620rpx; margin: 28rpx auto 0; padding: 24rpx 28rpx; border: 4rpx solid #141414; border-radius: 20rpx; background: #fff; box-sizing: border-box; }
 .status-card.warning { background: #fff8e2; }
 .status-card.error { background: #fff0eb; }
 .status-title { display: block; font-size: 36rpx; font-weight: 700; }

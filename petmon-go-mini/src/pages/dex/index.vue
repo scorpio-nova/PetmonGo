@@ -57,7 +57,7 @@ onShow(() => {
   const page = getCurrentPages().pop()
   const tabBar = page && typeof page.getTabBar === 'function' ? page.getTabBar() : null
   if (tabBar) {
-    tabBar.setData({ selected: 2 })
+    tabBar.setData({ selected: 3 })
   }
 })
 
@@ -137,6 +137,8 @@ onMounted(() => {
 
 .dex-content {
   padding: 20rpx 44rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .dex-header {
@@ -179,8 +181,10 @@ onMounted(() => {
 .pet-card {
   position: relative;
   padding: 28rpx 20rpx 24rpx;
+  width: 100%;
+  box-sizing: border-box;
   background: #fff;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 24rpx;
   display: flex;
   flex-direction: column;
@@ -190,7 +194,7 @@ onMounted(() => {
 
 .pet-card.angel-card {
   background: #fff8e2;
-  border: 10rpx solid #c3b3e0;
+  border: 4rpx solid #c3b3e0;
 }
 
 .pet-avatar {
