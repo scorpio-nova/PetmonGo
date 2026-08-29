@@ -33,22 +33,23 @@
       <!-- 安全事件 -->
       <view class="section">
         <text class="section-title">安全事件 · safety</text>
-        <view
-          v-for="event in events"
-          :key="event.id"
-          class="event-card"
-          @click="openEventDetail(event.id)"
-        >
-          <text class="event-icon">⚠️</text>
-          <view class="event-info">
-            <view class="event-title-row">
-              <text class="event-title">{{ event.title }}</text>
-              <view class="event-type-tag">{{ event.type }}</view>
+        <swiper class="event-swiper" :current="0" :duration="260" circular>
+          <swiper-item v-for="event in events" :key="event.id">
+            <view class="event-card" @click="openEventDetail(event.id)">
+              <view class="event-visual">
+                <text class="event-icon">⚠️</text>
+                <view class="event-type-tag">{{ event.type }}</view>
+              </view>
+              <view class="event-info">
+                <view class="event-title-row">
+                  <text class="event-title">{{ event.title }}</text>
+                </view>
+                <text class="event-meta">{{ event.place }} · {{ event.time }}</text>
+              </view>
+              <text class="event-arrow">›</text>
             </view>
-            <text class="event-meta">{{ event.place }} · {{ event.time }}</text>
-          </view>
-          <text class="event-arrow">›</text>
-        </view>
+          </swiper-item>
+        </swiper>
       </view>
 
       <!-- 宠物日志 -->
@@ -240,20 +241,20 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 8rpx;
-  width: 192rpx;
+  width: 152rpx;
 }
 
 .pet-avatar-wrapper {
   position: relative;
-  width: 168rpx;
-  height: 168rpx;
+  width: 128rpx;
+  height: 128rpx;
 }
 
 .pet-avatar {
   width: 100%;
   height: 100%;
-  border-radius: 52rpx;
-  border: 10rpx solid #141414;
+  border-radius: 50%;
+  border: 4rpx solid #141414;
 }
 
 .pet-name {
@@ -261,16 +262,34 @@ onMounted(() => {
   font-weight: 700;
 }
 
+.event-swiper {
+  width: 100%;
+  height: 410rpx;
+}
+
 .event-card {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 24rpx;
-  padding: 28rpx 32rpx;
+  flex-direction: column;
+  width: 100%;
+  height: 410rpx;
+  padding: 0 28rpx 28rpx;
   background: #fff;
-  border: 10rpx solid #141414;
-  border-radius: 20rpx;
-  margin-bottom: 24rpx;
+  border: 4rpx solid #141414;
+  border-radius: 28rpx;
+  box-sizing: border-box;
+}
+
+.event-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% + 56rpx);
+  height: 250rpx;
+  margin: 0 -28rpx 24rpx;
+  background: #f5d35f;
+  border-radius: 24rpx 24rpx 0 0;
 }
 
 .event-icon {
@@ -278,7 +297,7 @@ onMounted(() => {
 }
 
 .event-info {
-  flex: 1;
+  width: 100%;
 }
 
 .event-title-row {
@@ -293,6 +312,9 @@ onMounted(() => {
 }
 
 .event-type-tag {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
   font-size: 24rpx;
   font-weight: 700;
   background: #141414;
@@ -308,6 +330,9 @@ onMounted(() => {
 }
 
 .event-arrow {
+  position: absolute;
+  right: 28rpx;
+  bottom: 22rpx;
   font-size: 40rpx;
   color: #8f8b83;
 }
@@ -318,7 +343,7 @@ onMounted(() => {
   gap: 24rpx;
   padding: 20rpx;
   background: #fff;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 20rpx;
 }
 
@@ -353,7 +378,7 @@ onMounted(() => {
   gap: 24rpx;
   padding: 20rpx;
   background: #fff8e2;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 20rpx;
 }
 
@@ -388,7 +413,7 @@ onMounted(() => {
   gap: 24rpx;
   padding: 20rpx;
   background: #fff;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 20rpx;
 }
 
@@ -442,7 +467,7 @@ onMounted(() => {
   gap: 24rpx;
   padding: 20rpx;
   background: #eef4dc;
-  border: 10rpx solid #141414;
+  border: 4rpx solid #141414;
   border-radius: 20rpx;
 }
 

@@ -3,7 +3,6 @@
     <!-- 自定义导航栏 -->
     <view class="nav-bar">
       <view class="nav-title">
-        <text class="app-name">petmon go</text>
         <text class="nav-subtitle">nearby 附近</text>
       </view>
     </view>
@@ -44,9 +43,6 @@
 
     <!-- 附近宠物列表 -->
     <scroll-view class="nearby-list" scroll-y>
-      <view class="list-header">
-        <text class="list-hint">点一下打招呼 · tap to say hi</text>
-      </view>
       <view
         v-for="pet in nearbyPets"
         :key="pet.id"
@@ -147,6 +143,8 @@ function photoFor(pet: Pet): string {
 const nearbyPets = computed(() => {
   return localPets.value
     .filter(p => p.xy && p.collected)
+    // 首页底部列表暂不展示这三只宠物，图鉴和其他页面数据保留。
+    .filter(p => !['cat1', 'cat2', 'cat4'].includes(p.id))
     .map(p => ({
       ...p,
       distM: calcDistance(p.xy!),
@@ -425,7 +423,8 @@ onMounted(() => {
 
 .publish-btn {
   position: fixed;
-  bottom: 140rpx;
+  // 原生 TabBar 高度约 196rpx，按钮垂直居中于底栏。
+  bottom: 44rpx;
   left: 50%;
   transform: translateX(-50%);
   width: 108rpx;
