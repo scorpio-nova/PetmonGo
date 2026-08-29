@@ -115,7 +115,7 @@ onMounted(() => {
 }
 
 .app-name {
-  font-family: 'Gaegu', 'Long Cang', cursive;
+  font-family: 'Petmon Gaegu', 'Petmon Long Cang', cursive;
   font-size: 58rpx;
   font-weight: 700;
   letter-spacing: -1rpx;

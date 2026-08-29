@@ -3,7 +3,6 @@
     <!-- 自定义导航栏 -->
     <view class="nav-bar">
       <view class="nav-title">
-        <text class="app-name">petmon go</text>
         <text class="nav-subtitle">nearby 附近</text>
       </view>
     </view>
@@ -44,9 +43,6 @@
 
     <!-- 附近宠物列表 -->
     <scroll-view class="nearby-list" scroll-y>
-      <view class="list-header">
-        <text class="list-hint">点一下打招呼 · tap to say hi</text>
-      </view>
       <view
         v-for="pet in nearbyPets"
         :key="pet.id"
@@ -67,6 +63,11 @@
         <text class="pet-stars">{{ getStarStr(pet.stars) }}</text>
       </view>
     </scroll-view>
+
+    <!-- 独立于原生 tabBar 的中心发布按钮；保持原有尺寸和定位，避免 SVG 图标替换后加号丢失。 -->
+    <view class="publish-btn" @click="goPublish">
+      <image class="publish-icon" src="/static/icons/c-cross-white.svg" mode="aspectFit" />
+    </view>
   </view>
 </template>
 
@@ -136,6 +137,8 @@ const localPets = ref(petsData)
 const nearbyPets = computed(() => {
   return localPets.value
     .filter(p => p.xy && p.collected)
+    // 首页底部列表暂不展示这三只宠物，图鉴和其他页面数据保留。
+    .filter(p => !['cat1', 'cat2', 'cat4'].includes(p.id))
     .map(p => ({
       ...p,
       distM: calcDistance(p.xy!),
@@ -204,14 +207,14 @@ onMounted(() => {
 }
 
 .app-name {
-  font-family: 'Gaegu', 'Long Cang', cursive;
+  font-family: 'Petmon Gaegu', 'Petmon Long Cang', cursive;
   font-size: 58rpx;
   font-weight: 700;
   letter-spacing: -1rpx;
 }
 
 .nav-subtitle {
-  font-family: 'Gaegu', 'Long Cang', cursive;
+  font-family: 'Petmon Gaegu', 'Petmon Long Cang', cursive;
   font-size: 32rpx;
   color: #8f8b83;
 }
@@ -411,7 +414,8 @@ onMounted(() => {
 
 .publish-btn {
   position: fixed;
-  bottom: 140rpx;
+  // 原生 TabBar 高度约 196rpx，按钮垂直居中于底栏。
+  bottom: 44rpx;
   left: 50%;
   transform: translateX(-50%);
   width: 108rpx;
@@ -427,9 +431,8 @@ onMounted(() => {
 }
 
 .publish-icon {
-  color: #fff;
-  font-size: 72rpx;
-  font-weight: 700;
-  line-height: 1;
+  width: 72rpx;
+  height: 72rpx;
+  display: block;
 }
 </style>

@@ -71,29 +71,29 @@ onHide(() => {
 <style>
 /* 全局样式 */
 @font-face {
-  font-family: 'Gaegu';
-  src: url('https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2') format('woff2');
+  font-family: 'Petmon Gaegu';
+  src: url('/static/fonts/gaegu-300.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Gaegu';
-  src: url('https://fonts.gstatic.com/s/gaegu/v17/TuGSUVB6Up9NU57nifw74sdtBk0x.woff2') format('woff2');
+  font-family: 'Petmon Gaegu';
+  src: url('/static/fonts/gaegu-700.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Long Cang';
-  src: url('https://fonts.gstatic.com/s/longcang/v20/LYjAdGP8kkQ-IF3dMPGP_kYZW8g.woff2') format('woff2');
+  font-family: 'Petmon Long Cang';
+  src: url('/static/fonts/long-cang.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
 }
 
 page {
   background: #fffdf8;
-  font-family: 'Gaegu', 'Long Cang', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Petmon Gaegu', 'Petmon Long Cang', 'Chalkboard SE', 'Bradley Hand', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* 手绘风格边框 */

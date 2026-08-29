@@ -57,6 +57,13 @@
       }
     },
     {
+      "path": "pages/recognize/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": ""
+      }
+    },
+    {
       "path": "pages/inbox/index",
       "style": {
         "navigationStyle": "custom",

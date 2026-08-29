@@ -99,9 +99,7 @@ function requireLogin(callback: () => void) {
 
 // 去拍照识别
 function goRecognize() {
-  requireLogin(() => {
-    uni.$showToast('宠物识别功能开发中', 'loading')
-  })
+  uni.navigateTo({ url: '/pages/recognize/index' })
 }
 
 // 去发布事件

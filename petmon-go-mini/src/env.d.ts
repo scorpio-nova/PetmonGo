@@ -7,6 +7,9 @@ declare module '*.vue' {
   export default component
 }
 
+// 微信小程序原生云开发 API 由运行时注入，@dcloudio/types 未声明全局 wx。
+declare const wx: any
+
 // 扩展 uni 类型
 interface Uni {
   $showToast: (message: string, type?: 'success' | 'error' | 'loading', duration?: number) => void
