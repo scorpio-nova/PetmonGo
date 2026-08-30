@@ -4,7 +4,6 @@
     <view class="nav-bar">
       <view class="nav-title">
         <text class="app-name">petmon go</text>
-        <text class="nav-subtitle">dex 图鉴</text>
       </view>
     </view>
 
@@ -37,7 +36,6 @@
                 <text class="pet-en">{{ pet.en }}</text>
                 <text class="pet-cn">{{ pet.cn }}</text>
               </view>
-              <view class="pet-breed-tag">{{ pet.breed }}</view>
             </view>
           </view>
         </view>

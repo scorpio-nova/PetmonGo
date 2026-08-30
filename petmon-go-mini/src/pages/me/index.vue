@@ -4,7 +4,6 @@
     <view class="nav-bar">
       <view class="nav-title">
         <text class="app-name">petmon go</text>
-        <text class="nav-subtitle">me 我的</text>
       </view>
     </view>
 
