@@ -1,36 +1,31 @@
 <template>
   <view class="container">
-    <!-- 导航栏 -->
-    <view class="nav-bar">
-      <view class="nav-back" @click="goBack">
-        <text class="back-arrow">←</text>
+    <map
+      class="publish-map-bg"
+      :latitude="currentLat"
+      :longitude="currentLng"
+      :markers="mapMarkers"
+      :scale="16"
+      show-location
+    />
+    <view class="sheet-backdrop" @click="goBack"></view>
+    <view class="publish-sheet">
+      <view class="sheet-handle"></view>
+      <view class="sheet-header">
+        <text class="sheet-title">发布</text>
+        <text class="sheet-subtitle">分享你在街区发现的瞬间</text>
+        <view class="sheet-close" @click="goBack"><text>×</text></view>
       </view>
-      <text class="nav-subtitle">发布 · publish</text>
-    </view>
 
-    <!-- 发布选项 -->
-    <view class="publish-content">
-      <view class="publish-grid">
-        <!-- 拍照识别 -->
-        <view class="publish-card" @click="goRecognize">
-          <view class="card-icon-wrapper">
-            <text class="card-icon">📷</text>
-          </view>
-          <view class="card-info">
-            <text class="card-title">拍照识别</text>
-            <text class="card-desc">遇到毛孩子 snap</text>
-          </view>
+      <view class="publish-options">
+        <view class="publish-option" @click="goRecognize">
+          <text class="option-title">拍照</text>
         </view>
-
-        <!-- 发布事件 -->
-        <view class="publish-card event-card" @click="goPubEvent">
-          <view class="card-icon-wrapper event-icon">
-            <text class="card-icon">⚠️</text>
-          </view>
-          <view class="card-info">
-            <text class="card-title">发布事件</text>
-            <text class="card-desc">安全提醒 report</text>
-          </view>
+        <view class="publish-option safety" @click="goPubEvent">
+          <text class="option-title">安全信息</text>
+        </view>
+        <view class="publish-option activity" @click="publishSharedTrack">
+          <text class="option-title">共享轨迹</text>
         </view>
       </view>
     </view>
@@ -40,6 +35,13 @@
 <script setup lang="ts">
 import { onShow } from '@dcloudio/uni-app'
 import { login } from '@/api/user'
+import { computed, ref } from 'vue'
+import { petsData } from '@/data/pets'
+import { buildMapMarkers } from '@/utils/map-markers'
+
+const currentLat = ref(39.9842)
+const currentLng = ref(116.3074)
+const mapMarkers = computed(() => buildMapMarkers(petsData, currentLat.value, currentLng.value))
 
 onShow(() => {
   const page = getCurrentPages().pop()
@@ -126,6 +128,10 @@ function goPubEvent() {
       url: '/pages/report-event/index',
     })
   })
+}
+
+function publishSharedTrack() {
+  uni.$showToast('共享轨迹功能即将上线', 'success')
 }
 </script>
 
@@ -216,5 +222,118 @@ function goPubEvent() {
 .card-desc {
   font-size: 28rpx;
   color: #8f8b83;
+}
+
+.container {
+  position: relative;
+  min-height: 100vh;
+  background: #f2f1ec;
+  overflow: hidden;
+}
+
+.publish-map-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.32);
+  animation: fade-in 180ms ease-out;
+}
+
+.publish-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 16rpx 32rpx calc(132rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 253, 248, 0.97);
+  border-radius: 36rpx 36rpx 0 0;
+  box-sizing: border-box;
+  animation: slide-up 240ms ease-out;
+}
+
+.sheet-handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 0 auto 22rpx;
+  background: #c4c1ba;
+  border-radius: 8rpx;
+}
+
+.sheet-header {
+  position: relative;
+  padding: 0 8rpx 24rpx;
+}
+
+.sheet-title {
+  display: block;
+  font-size: 46rpx;
+  font-weight: 700;
+}
+
+.sheet-subtitle {
+  display: block;
+  margin-top: 4rpx;
+  color: #8f8b83;
+  font-size: 26rpx;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 0;
+  right: 8rpx;
+  width: 52rpx;
+  height: 52rpx;
+  color: #141414;
+  font-size: 48rpx;
+  line-height: 44rpx;
+  text-align: center;
+}
+
+.publish-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.publish-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72rpx;
+  padding: 12rpx 20rpx;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+.publish-option.safety {
+  background: transparent;
+}
+
+.publish-option.activity {
+  background: transparent;
+}
+
+.option-title {
+  font-size: 29rpx;
+  font-weight: 700;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 </style>

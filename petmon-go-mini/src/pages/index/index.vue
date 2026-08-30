@@ -45,9 +45,9 @@
               v-for="action in quickActions"
               :key="action.label"
               class="quick-action"
+              :style="{ borderColor: action.color }"
               @click="searchQuery = action.label"
             >
-              <text class="quick-icon">{{ action.icon }}</text>
               <text class="quick-label">{{ action.label }}</text>
             </view>
           </scroll-view>
@@ -112,10 +112,11 @@ const currentLng = ref(116.3074)
 const searchQuery = ref('')
 
 const quickActions = [
-  { icon: '✚', label: '医院' },
-  { icon: '☕', label: '餐厅' },
-  { icon: '⌖', label: '景点' },
-  { icon: '⚑', label: '活动组队' }
+  { label: '医院', color: '#d9a6a0' },
+  { label: '餐厅', color: '#d9b66f' },
+  { label: '景点', color: '#9fb9a3' },
+  { label: '活动组队', color: '#a9acd0' },
+  { label: '共享轨迹', color: '#b6a0c7' }
 ]
 
 // 选中的宠物
@@ -380,17 +381,9 @@ onMounted(() => {
   width: 142rpx;
   height: 62rpx;
   margin-right: 14rpx;
-  background: #fff;
-  border: 3rpx solid #141414;
-  border-radius: 32rpx;
+  border: 3rpx solid;
+  border-radius: 999rpx;
   box-sizing: border-box;
-}
-
-.quick-icon {
-  font-size: 28rpx;
-  color: #4e4b45;
-  line-height: 1;
-  margin-right: 8rpx;
 }
 
 .quick-label {

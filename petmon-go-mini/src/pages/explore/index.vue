@@ -4,105 +4,31 @@
     <view class="nav-bar">
       <view class="nav-title">
         <text class="app-name">petmon go</text>
-        <text class="nav-subtitle">explore 探索</text>
       </view>
     </view>
 
-    <!-- 探索内容 -->
+    <!-- 两列瀑布流探索内容 -->
     <scroll-view class="explore-content" scroll-y>
-      <!-- 附近宠物 -->
-      <view class="section">
-        <text class="section-title">附近宠物 · pets nearby</text>
-        <scroll-view class="pet-scroll" scroll-x>
-          <view class="pet-list">
-            <view
-              v-for="pet in nearbyPets"
-              :key="pet.id"
-              class="pet-item"
-              @click="openPetDetail(pet.id)"
-            >
-              <view class="pet-avatar-wrapper">
-              <image class="pet-avatar" :src="photoFor(pet)" mode="aspectFill" />
-              </view>
-              <text class="pet-name">{{ pet.en }}</text>
+      <view class="waterfall">
+        <view v-for="(column, columnIndex) in feedColumns" :key="columnIndex" class="waterfall-column">
+          <view
+            v-for="item in column"
+            :key="item.id"
+            class="feed-card"
+            @click="openFeedItem(item)"
+          >
+            <view class="feed-cover" :style="{ backgroundColor: item.coverColor }">
+              <image v-if="item.cover" class="feed-image" :src="item.cover" mode="aspectFill" />
+              <text v-else class="feed-cover-icon">{{ item.icon }}</text>
             </view>
-          </view>
-        </scroll-view>
-      </view>
-
-      <!-- 安全事件 -->
-      <view class="section">
-        <text class="section-title">安全事件 · safety</text>
-        <swiper class="event-swiper" :current="0" :duration="260" circular>
-          <swiper-item v-for="event in events" :key="event.id">
-            <view class="event-card" @click="openEventDetail(event.id)">
-              <view class="event-visual">
-                <text class="event-icon">⚠️</text>
-                <view class="event-type-tag">{{ event.type }}</view>
+            <text class="feed-title">{{ item.title }}</text>
+            <view class="feed-footer">
+              <text class="feed-account">{{ item.account }}</text>
+              <view class="favorite-btn" @click.stop="toggleFavorite(item.id)">
+                <text class="favorite-icon">{{ isFavorite(item.id) ? '♥' : '♡' }}</text>
+                <text class="favorite-count">{{ item.favorites + (isFavorite(item.id) ? 1 : 0) }}</text>
               </view>
-              <view class="event-info">
-                <view class="event-title-row">
-                  <text class="event-title">{{ event.title }}</text>
-                </view>
-                <text class="event-meta">{{ event.place }} · {{ event.time }}</text>
-              </view>
-              <text class="event-arrow">›</text>
             </view>
-          </swiper-item>
-        </swiper>
-      </view>
-
-      <!-- 宠物日志 -->
-      <view class="section">
-        <text class="section-title">宠物日志 · pet log</text>
-        <view class="log-card">
-          <image class="log-image" :src="photoForId('cat1')" mode="aspectFill" />
-          <view class="log-info">
-            <text class="log-text">Catt 今天中午在花坛边晒肚皮，被 3 个路人拍了照。摸鱼一整天。</text>
-            <text class="log-meta">by Momo · 今天 14:02</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 天使故事 -->
-      <view class="section">
-        <text class="section-title">天使故事 · angel story</text>
-        <view class="angel-card">
-          <image class="angel-image" :src="photoForId('cat4')" mode="aspectFill" />
-          <view class="angel-info">
-            <text class="angel-text">刀疤在这个街区生活了 6 年，去年冬天去了喵星。大家还会在老地方给它留小鱼干。</text>
-            <text class="angel-meta">by 楼下阿姨 · 3 天前</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 地点评价 -->
-      <view class="section">
-        <text class="section-title">地点评价 · places</text>
-        <view class="place-card">
-          <view class="place-image-placeholder">
-            <text class="place-emoji">☕</text>
-          </view>
-          <view class="place-info">
-            <view class="place-name-row">
-              <text class="place-name">咪想咖啡</text>
-              <text class="place-stars">★★★★☆</text>
-            </view>
-            <text class="place-desc">"店里有猫抓板和水碗，狗狗可进" · 26 条评价</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 遛宠路线 -->
-      <view class="section">
-        <text class="section-title">遛宠路线 · walk route</text>
-        <view class="route-card">
-          <view class="route-image-placeholder">
-            <text class="route-emoji">🚶</text>
-          </view>
-          <view class="route-info">
-            <text class="route-name">河边慢走圈 · riverside loop</text>
-            <text class="route-desc">2.1 km · 35 min · 一路 4 只毛孩子</text>
           </view>
         </view>
       </view>
@@ -129,11 +55,20 @@ onShow(() => {
 // 当前时间
 const currentTime = ref('12:51')
 
-// 附近宠物（前5只）
-const nearbyPets = computed(() => {
-  return petsData.filter(p => p.collected).slice(0, 5)
-})
 const photoOverrides = ref<Record<string, string>>({})
+const favoriteIds = ref<string[]>([])
+
+interface FeedItem {
+  id: string
+  cover: string
+  coverColor: string
+  icon: string
+  title: string
+  account: string
+  favorites: number
+  eventId?: string
+  petId?: string
+}
 
 function photoFor(pet: (typeof petsData)[number]): string {
   return getPetPhoto(pet, photoOverrides.value)
@@ -144,8 +79,80 @@ function photoForId(id: string): string {
   return pet ? photoFor(pet) : ''
 }
 
-// 事件列表
-const events = computed(() => eventsData)
+const feedItems = computed<FeedItem[]>(() => [
+  ...petsData.filter(p => p.collected).slice(0, 4).map(pet => ({
+    id: `pet-${pet.id}`,
+    cover: photoFor(pet),
+    coverColor: '#e9e4d8',
+    icon: '🐾',
+    title: `${pet.cn} · ${pet.en} 的街区日常`,
+    account: `@${pet.en.toLowerCase()}`,
+    favorites: pet.seen
+  })),
+  ...eventsData.map(event => ({
+    id: `event-${event.id}`,
+    cover: '',
+    coverColor: event.type === '丢失' ? '#f5d35f' : '#f1b5a5',
+    icon: '⚠️',
+    title: event.title,
+    account: `@${event.by}`,
+    favorites: 12,
+    eventId: event.id
+  })),
+  {
+    id: 'log-catt',
+    cover: photoForId('cat1'),
+    coverColor: '#e9e4d8',
+    icon: '🐾',
+    title: 'Catt 今天在花坛边晒肚皮',
+    account: '@Momo',
+    favorites: 28,
+    petId: 'cat1'
+  },
+  {
+    id: 'angel-scar',
+    cover: photoForId('cat4'),
+    coverColor: '#fff0bf',
+    icon: '😇',
+    title: '刀疤的街区故事',
+    account: '@楼下阿姨',
+    favorites: 36,
+    petId: 'cat4'
+  },
+  {
+    id: 'place-cafe',
+    cover: '',
+    coverColor: '#e4d9c8',
+    icon: '☕',
+    title: '咪想咖啡：可以带毛孩子来',
+    account: '@街区探店',
+    favorites: 22
+  },
+  {
+    id: 'walk-route',
+    cover: '',
+    coverColor: '#d9e5a6',
+    icon: '🚶',
+    title: '河边慢走圈 · 2.1 km',
+    account: '@遛宠小组',
+    favorites: 18
+  }
+])
+
+const feedColumns = computed(() => [
+  feedItems.value.filter((_, index) => index % 2 === 0),
+  feedItems.value.filter((_, index) => index % 2 === 1)
+])
+
+function isFavorite(id: string): boolean {
+  return favoriteIds.value.includes(id)
+}
+
+function toggleFavorite(id: string) {
+  favoriteIds.value = isFavorite(id)
+    ? favoriteIds.value.filter(itemId => itemId !== id)
+    : [...favoriteIds.value, id]
+}
 
 // 打开宠物详情
 function openPetDetail(id: string) {
@@ -161,6 +168,14 @@ function openEventDetail(id: string) {
   })
 }
 
+function openFeedItem(item: (typeof feedItems.value)[number]) {
+  if (item.eventId) {
+    openEventDetail(item.eventId)
+  } else if (item.petId) {
+    openPetDetail(item.petId)
+  }
+}
+
 // 获取当前时间
 function updateTime() {
   const now = new Date()
@@ -170,7 +185,7 @@ function updateTime() {
 onMounted(() => {
   updateTime()
   setInterval(updateTime, 60000)
-  void loadPetPhotos([...nearbyPets.value, ...petsData.filter(pet => pet.id === 'cat1' || pet.id === 'cat4')]).then((photos) => {
+  void loadPetPhotos([...petsData.filter(pet => pet.collected)]).then((photos) => {
     photoOverrides.value = photos
   })
 })
@@ -502,5 +517,96 @@ onMounted(() => {
   font-size: 24rpx;
   color: #8f8b83;
   margin-top: 8rpx;
+}
+
+/* 小红书式双列瀑布流 */
+.explore-content {
+  padding: 12rpx 24rpx 48rpx;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.waterfall {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.waterfall-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-card {
+  width: 100%;
+  margin-bottom: 24rpx;
+  padding-bottom: 16rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 3rpx 0 rgba(20, 20, 20, 0.08);
+}
+
+.feed-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 260rpx;
+  overflow: hidden;
+}
+
+.feed-image {
+  width: 100%;
+  height: 100%;
+}
+
+.feed-cover-icon {
+  font-size: 76rpx;
+}
+
+.feed-title {
+  display: block;
+  padding: 14rpx 16rpx 0;
+  font-size: 29rpx;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.feed-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rpx;
+  padding: 12rpx 16rpx 0;
+}
+
+.feed-account {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #8f8b83;
+  font-size: 23rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favorite-btn {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #8f8b83;
+}
+
+.favorite-icon {
+  color: #e36b67;
+  font-size: 30rpx;
+  line-height: 1;
+}
+
+.favorite-count {
+  margin-left: 4rpx;
+  font-size: 22rpx;
 }
 </style>
