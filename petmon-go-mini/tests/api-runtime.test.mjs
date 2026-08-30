@@ -31,7 +31,7 @@ async function compile(relativePath) {
 }
 
 await compile('utils/cloud.ts')
-for (const apiFile of ['user.ts', 'pet.ts', 'encounter.ts', 'event.ts', 'notice.ts']) {
+for (const apiFile of ['user.ts', 'pet.ts', 'encounter.ts', 'event.ts', 'notice.ts', 'recognize.ts']) {
   await compile(`api/${apiFile}`)
 }
 
@@ -50,6 +50,7 @@ const petApi = require(path.join(outputRoot, 'api/pet.js'))
 const encounterApi = require(path.join(outputRoot, 'api/encounter.js'))
 const eventApi = require(path.join(outputRoot, 'api/event.js'))
 const noticeApi = require(path.join(outputRoot, 'api/notice.js'))
+const recognizeApi = require(path.join(outputRoot, 'api/recognize.js'))
 
 assert.deepEqual(await cloud.callCloud('login'), { code: -1, message: '云开发未初始化' })
 
@@ -64,6 +65,10 @@ assert.deepEqual(await cloud.callCloud('health', { ping: true }), { code: 0, dat
 assert.deepEqual(await cloud.callCloud('failure'), { code: -1, message: 'network down' })
 
 wx.cloud = {
+  uploadFile(payload) {
+    calls.push({ name: 'uploadFile', data: payload })
+    payload.success({ fileID: 'cloud://recognition/input.jpg' })
+  },
   async callFunction(payload) {
     calls.push(payload)
     const results = {
@@ -72,7 +77,8 @@ wx.cloud = {
       addPet: { code: 0, data: { petId: 'p1' } },
       addEncounter: { code: 0, data: { encounterId: 'e1' } },
       addEvent: { code: 0, data: { eventId: 'event1' } },
-      getNotifications: { code: 0, data: { list: [], total: 0, page: 2, pageSize: 5 } }
+      getNotifications: { code: 0, data: { list: [], total: 0, page: 2, pageSize: 5 } },
+      recognizePet: { code: 0, data: { model: 'clip-test', matches: [{ petId: 'p1', score: 0.9 }] } }
     }
     return { result: results[payload.name] || { code: -2, message: 'rejected' } }
   }
@@ -86,7 +92,6 @@ assert.equal(await petApi.addPet({ name: 'Mochi', kind: 'cat', breed: 'x', tag: 
 assert.equal(await encounterApi.addEncounter({ petId: 'p1' }), 'e1')
 assert.equal(await eventApi.addEvent({ type: '丢失', title: '走失', place: 'A' }), 'event1')
 assert.deepEqual(await noticeApi.getNotifications({ page: 2, pageSize: 5 }), { list: [], total: 0, page: 2, pageSize: 5 })
-
 assert.deepEqual(
   calls.slice(-6).map(call => ({ name: call.name, data: call.data })),
   [
@@ -98,6 +103,12 @@ assert.deepEqual(
     { name: 'getNotifications', data: { page: 2, pageSize: 5 } }
   ]
 )
+
+assert.deepEqual(await recognizeApi.recognizePet('/tmp/input.jpg'), {
+  model: 'clip-test',
+  matches: [{ petId: 'p1', score: 0.9 }]
+})
+assert.equal(calls.at(-1).name, 'recognizePet')
 
 wx.cloud.callFunction = async () => ({ result: { code: -2, message: 'rejected' } })
 assert.equal(await petApi.addPet({ name: 'Mochi', kind: 'cat', breed: 'x', tag: 'x', area: 'A' }), null)

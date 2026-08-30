@@ -17,11 +17,24 @@
 
       <view v-if="status === 'selecting'" class="status-card">
         <text class="status-title">正在准备识别…</text>
-        <text class="status-hint">照片已选中，正在检查本地识别模型</text>
+        <text class="status-hint">照片已选中，正在上传到安全识别服务</text>
       </view>
-      <view v-else-if="status === 'unsupported'" class="status-card warning">
-        <text class="status-title">照片已收到</text>
-        <text class="status-hint">当前小程序包还没有可运行的 CLIP 模型。原网页使用的是约 85 MiB 的 Xenova/clip-vit-base-patch32，不能直接在微信小程序复用；接入 MobileCLIP-S0（或其 ONNX/WXWebAssembly 适配包）后即可在这里完成匹配。</text>
+      <view v-else-if="status === 'recognizing'" class="status-card">
+        <text class="status-title">CLIP 正在匹配…</text>
+        <text class="status-hint">后端模型正在和宠物图库比对，请稍候</text>
+      </view>
+      <view v-else-if="status === 'success'" class="status-card success">
+        <text class="status-title">识别完成</text>
+        <view v-if="result?.matches.length" class="match-list">
+          <view v-for="(match, index) in result.matches" :key="match.petId" class="match-row">
+            <text class="match-rank">{{ index + 1 }}</text>
+            <view class="match-info">
+              <text class="match-name">{{ match.name || match.petId }}<text v-if="match.cnName"> · {{ match.cnName }}</text></text>
+              <text class="match-score">相似度 {{ formatScore(match.score) }}</text>
+            </view>
+          </view>
+        </view>
+        <text v-else class="status-hint">图库中暂时没有足够相似的宠物</text>
       </view>
       <view v-else-if="status === 'error'" class="status-card error">
         <text class="status-title">{{ errorMessage }}</text>
@@ -37,12 +50,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { recognizePet, type RecognitionResult } from '@/api/recognize'
 import { getRecognitionErrorMessage, normalizeMediaPath } from '@/utils/recognize'
 
-type Status = 'idle' | 'selecting' | 'unsupported' | 'error'
+type Status = 'idle' | 'selecting' | 'recognizing' | 'success' | 'error'
 const photo = ref('')
 const status = ref<Status>('idle')
 const errorMessage = ref('')
+const result = ref<RecognitionResult | null>(null)
 
 function goBack() {
   uni.navigateBack()
@@ -51,6 +66,7 @@ function goBack() {
 function choosePhoto() {
   status.value = 'idle'
   errorMessage.value = ''
+  result.value = null
   const onSuccess = (result: any) => {
     const path = normalizeMediaPath(result)
     if (!path) {
@@ -60,8 +76,7 @@ function choosePhoto() {
     }
     photo.value = path
     status.value = 'selecting'
-    // 目前仅完成选择链路；模型适配完成前明确提示，避免假装返回匹配结果。
-    setTimeout(() => { status.value = 'unsupported' }, 250)
+    void runRecognition(path)
   }
   const onFail = (error: unknown) => {
     status.value = 'error'
@@ -88,6 +103,30 @@ function choosePhoto() {
     })
   }
 }
+
+async function runRecognition(path: string): Promise<void> {
+  status.value = 'recognizing'
+  uni.$showToast('识别中...', 'loading', 0)
+  try {
+    const recognition = await recognizePet(path)
+    uni.$hideToast()
+    if (!recognition) {
+      status.value = 'error'
+      errorMessage.value = '识别服务暂时不可用，请稍后重试'
+      return
+    }
+    result.value = recognition
+    status.value = 'success'
+  } catch (error) {
+    uni.$hideToast()
+    status.value = 'error'
+    errorMessage.value = getRecognitionErrorMessage(error)
+  }
+}
+
+function formatScore(score: number): string {
+  return `${Math.round(Math.max(0, Math.min(1, score)) * 100)}%`
+}
 </script>
 
 <style lang="scss" scoped>
@@ -106,8 +145,15 @@ function choosePhoto() {
 .status-card { width: 100%; max-width: 620rpx; margin: 28rpx auto 0; padding: 24rpx 28rpx; border: 4rpx solid #141414; border-radius: 20rpx; background: #fff; box-sizing: border-box; }
 .status-card.warning { background: #fff8e2; }
 .status-card.error { background: #fff0eb; }
+.status-card.success { background: #eff9ed; }
 .status-title { display: block; font-size: 36rpx; font-weight: 700; }
 .status-hint { display: block; margin-top: 8rpx; font-size: 27rpx; line-height: 1.45; color: #6f6b65; }
+.match-list { margin-top: 18rpx; }
+.match-row { display: flex; align-items: center; gap: 18rpx; padding: 14rpx 0; border-top: 2rpx solid #d9e8d3; }
+.match-rank { width: 42rpx; height: 42rpx; border-radius: 50%; background: #141414; color: #fff; text-align: center; line-height: 42rpx; font-size: 24rpx; }
+.match-info { display: flex; flex-direction: column; gap: 4rpx; }
+.match-name { font-size: 30rpx; font-weight: 700; }
+.match-score { font-size: 24rpx; color: #6f6b65; }
 .choose-btn { margin-top: 36rpx; padding: 26rpx 0; border-radius: 36rpx; background: #141414; text-align: center; }
 .choose-text { color: #fff; font-size: 38rpx; font-weight: 700; }
 </style>
