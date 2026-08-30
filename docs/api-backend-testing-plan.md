@@ -6,6 +6,10 @@
 
 ## 1. 文档边界与事实来源
 
+流程图：[`figures/clip-wechat-cloud-flow.md`](../figures/clip-wechat-cloud-flow.md)（源码：[`figures/clip-wechat-cloud-flow.mmd`](../figures/clip-wechat-cloud-flow.mmd)）。
+
+环境约定：当前只使用 `petmon-backend-d0gdzcyjw2d9f70ba` 作为测试/预发布环境。正式上线前必须创建独立生产环境，禁止复用测试环境的数据、存储和云托管服务。用户此前提供的 `petmon-backend-d0gdzcyjw-da10758` 属于另一个账号，已作废，不纳入部署范围。
+
 本方案针对当前微信小程序实现，而不是根目录 README 和早期纯静态站架构。接口事实来源如下：
 
 - 客户端调用封装：`petmon-go-mini/src/utils/cloud.ts`
@@ -35,6 +39,7 @@
 | `addEncounter` | `petId`, `photo?`, `note?` | `encounterId` | 审核、上传、四类集合写入；非原子一致性 | P0 |
 | `addEvent` | `type`, `title`, `place`, 其余可选 | `eventId` | 标题/描述审核，事件写入 | P1 |
 | `getNotifications` | `page?`, `pageSize?` | 通知分页列表 | 只能读取当前用户通知 | P0 |
+| `recognizePet` | `fileId` | CLIP 模型、Top-K 匹配 | 上传图片临时 URL、外部推理服务、识别后清理上传文件 | P0 |
 
 ## 3. 测试分层与当前实现
 
@@ -88,6 +93,71 @@ API 类型契约测试位于 `petmon-go-mini/tests/api-types.test.ts`，通过 `
 - 用户通知隔离和位置隐私
 - 并发登录与重复提交
 - 微信开发者工具/真机关键链路
+
+### 3.5 CLIP 后端链路（代码已接通，微信云托管部署待配置）
+
+识别链路如下：
+
+```text
+选择本地照片
+  -> wx.cloud.uploadFile（recognitions/ 临时文件）
+  -> recognizePet 云函数
+  -> getTempFileURL（输入图 + 宠物图库）
+  -> 微信云托管/HTTP 容器中的 CLIP 推理服务
+  -> 返回 Top-K petId/score
+  -> 云函数清理输入临时文件
+```
+
+代码位置：
+
+- 客户端 API：`petmon-go-mini/src/api/recognize.ts`
+- 识别页面：`petmon-go-mini/src/pages/recognize/index.vue`
+- 微信云函数：`petmon-go-mini/cloudfunctions/recognizePet/index.js`
+- 推理服务：`backend/clip-service/app.py`（部署目标：微信云托管）
+- 推理服务部署说明：`backend/clip-service/README.md`
+
+云函数不加载模型，避免把模型和推理运行时放入普通函数包。当前推理服务默认使用仓库已有的 89,117,001-byte（约 85 MiB）量化 ONNX 视觉模型；目标部署为微信云托管，服务地址和 token 只配置在云函数环境变量中。
+
+CloudBase 也支持小程序通过 `wx.cloud.callContainer` 直连云托管服务，例如在 `header` 中传递 `X-WX-SERVICE: petmon-clip`。该方式只有在服务已经创建、服务名确定且小程序已关联同一环境后才可用；控制台 URL 本身不是业务请求 URL。当前 `petmon-clip` 已创建，但本项目仍通过 `recognizePet` 云函数中间层调用，以保护 token 和候选图库。
+
+对于本项目，建议继续采用“小程序 → `recognizePet` 云函数 → `petmon-clip`”而不是让小程序直接提交 CLIP 请求：云函数可以隐藏服务 token、校验 `fileId`、查询和过滤 `pets` 候选图库、统一清理临时图片，并防止客户端任意读取图库。`wx.cloud.callContainer` 可作为后续低延迟/简化链路的备选，但需要先完成同环境服务创建和安全规则验证。
+
+根据 [CloudBase 官方云函数配置文档](https://docs.cloudbase.net/cloud-function/function-configuration/config)，普通云函数内存可配置 64 MB–3072 MB，超时可配置 1–900 秒；[官方 FAQ](https://docs.cloudbase.net/cloud-function/faq) 同时建议不要让客户端同步等待长耗时函数。因而推荐将模型放在同一微信云体系的容器/HTTP 服务中，设置 1 个预热实例。粗略延迟预算（需真实环境压测确认）：
+
+| 阶段 | 预热 CPU ONNX | 冷启动 CPU ONNX |
+|---|---:|---:|
+| 上传/换取临时 URL | 0.3–1.5 s | 0.3–1.5 s |
+| 输入图编码 | 0.3–1.5 s | 0.3–1.5 s |
+| 首次图库向量 | 2–8 s（六张图量级） | 2–8 s |
+| 后续图库匹配 | <0.2 s（向量缓存命中） | <0.2 s |
+| 模型/容器冷启动 | 0 s | 3–15+ s |
+| 总体 | 1–10 s | 5–25+ s |
+
+10 秒目标在“预热实例 + 六张以内图库 + 首次向量缓存”条件下可行；如果每次都重新编码全部图库，或者发生冷启动，不应承诺 10 秒内完成。首次请求建议在 UI 显示进度，超过约 12 秒提供重试/异步结果兜底。
+
+本地契约验证：
+
+- `npm run test:recognize-cloud`：验证云函数请求体、token、Top-K 过滤、结果丰富和上传清理。
+- `npm run test:api-runtime`：验证客户端上传及 `recognizePet` API 解包。
+- `python3 -m py_compile backend/clip-service/app.py`：验证推理服务语法。
+
+当前微信云部署状态：
+
+- `recognizePet` 云函数已部署到 `petmon-backend-d0gdzcyjw2d9f70ba`，Nodejs20.19、512 MB、60 秒。
+- 空参数真实调用已验证返回 `code=-3`，耗时 4 ms。
+- `petmon-clip` 已创建并发布版本 `petmon-clip-002`，100% 流量已切换。
+- 服务域名：`https://petmon-clip-305490-11-1473602244.sh.run.tcloudbase.com`。
+- 服务配置：2 CPU、4 GB、最小实例 1、最大实例 2、端口 8080。
+- 构建日志显示容器镜像约 717 MB；量化模型本体约 85 MiB，镜像其余体积来自 Python/ONNX 运行时依赖，冷启动仍需实测。
+- `/healthz` 返回正常；不带服务 token 的 `/v1/clip/match` 返回 HTTP 401。
+- `recognizePet` 已配置 `CLIP_INFERENCE_URL` 和 `CLIP_INFERENCE_TOKEN`，token 不写入仓库。
+- 当前部署目标保持为测试/预发布环境，不代表正式生产环境已经建立。
+
+### 成长计划与云托管额度边界
+
+根据 [CloudBase 官方小程序成长计划页面](https://docs.cloudbase.net/ai/ai-inspire-plan)，成长计划权益包括 6 个月个人版云开发环境、AI 资源包；部分报名条件下可获得云开发代金券。官方权益表没有将 CloudRun/云托管 CPU、内存或实例额度列为固定权益。当前环境曾首次返回 `云托管资源未开通`，在用户开通云托管能力后才创建成功，因此不能把成长计划等同于已自动开通云托管。
+
+如果控制台另有代金券或云托管试用活动，应以券的适用产品、有效期和抵扣规则为准，需在开通/创建前确认是否会产生费用。
 
 ## 4. 详细用例矩阵
 
@@ -198,6 +268,8 @@ PR 门禁：
 - API 类型契约测试必须通过
 - API 运行时 mock 测试必须通过
 - API 入口防回归测试必须通过
+- `recognizePet` 云函数契约测试必须通过
+- CLIP 推理服务健康检查和接口契约必须通过
 - 云函数单元测试必须通过
 - P0 用例不能失败
 - API 返回 envelope 发生变化时必须同步更新本文档和契约测试
@@ -214,6 +286,9 @@ PR 门禁：
 4. 多集合写入采用数据库事务、补偿操作还是接受最终一致性。
 5. 图片最大字节数、MIME 白名单、审核失败后的存储清理策略。
 6. `getNotifications` 是否需要配套的已读/批量已读 API。
+7. CLIP 云托管服务的规格、最小实例数和访问方式；模型默认使用仓库已有量化 ONNX 权重。
+8. 识别是否要求登录、相似度阈值和“无可靠匹配”的产品表现。
+9. 识别图片是否只做临时处理（当前代码会在云函数结束时尽力删除上传文件）。
 
 这些决策确认后，应先更新 API 契约，再补单测和集成测试，避免测试固化错误行为。
 

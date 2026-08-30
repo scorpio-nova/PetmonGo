@@ -6,7 +6,7 @@
 
 ## 1. 项目概览
 
-**Petmon Go** 是一款面向爱宠人士的地图型社区应用，当前以 **纯前端 HTML 实现**。核心功能包括：发现附近猫狗、宠物识别（CLIP 模型）、宠物图鉴收集、安全事件发布与提醒、天使宠物纪念卡等。
+**Petmon Go** 包含早期纯静态网页和当前微信小程序两套实现。当前小程序版本使用微信云开发 API，并计划通过微信云托管承载 CLIP 宠物识别服务。
 
 ### 关键信息
 
@@ -16,7 +16,7 @@
 | 在线部署 | https://petmongo.softlanding.com.cn/ |
 | 部署方式 | 纯静态站（Nginx + cron 拉取 GitHub） |
 | 技术框架 | dc-runtime（基于 React 的组件化 HTML/CSS/JS 框架） |
-| AI 能力 | 浏览器端 CLIP 图像识别（transformers.js） |
+| AI 能力 | 微信云托管中的量化 ONNX CLIP 图像识别服务 |
 | 入口文件 | `project/petmon go.dc.html` |
 | 运行环境 | 纯浏览器端，无后端 |
 
@@ -251,7 +251,7 @@ Nginx (petmongo.softlanding.com.cn)
 ### 当前技术栈可复用的部分
 
 - dc-runtime 组件化架构可继续使用（前端渲染层）
-- CLIP 识别可保持浏览器端运行（无需后端 GPU）
+- CLIP 识别模型放在微信云托管/HTTP 容器，避免进入小程序包
 - image-slot 组件的上传/持久化机制可扩展
 - SVG 图标系统和手绘风 UI 设计可保持
 

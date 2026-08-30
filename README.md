@@ -35,7 +35,7 @@ Petmon Go 把这些散落的信息，收进一张**大家一起建、一起看**
 ## 🧠 一点技术小骄傲
 
 - 🎨 **AI 时代，手绘温度** —— 全站稚拙涂鸦风 + 手写字体，一笔一画的界面，都是艺术家亲手画的。
-- 🤖 **识别跑在你手机里** —— 用 CLIP 模型在浏览器本地完成宠物识别与匹配，**无需后端、无需 GPU**，你的照片不离开设备。
+- 🤖 **后端 CLIP 识别** —— 小程序上传照片后，由微信云函数调用微信云托管中的 CLIP 服务完成宠物匹配；模型不进入小程序包，照片按当前策略临时处理。
 
 ---
 
@@ -65,6 +65,12 @@ npm run type-check
 npm run test:api-types
 npm run test:cloudfunctions
 ```
+
+小程序的 CLIP 识别链路已接入：识别图片先上传到微信云存储，由 `recognizePet` 云函数调用微信云托管中的 CLIP 推理服务并返回匹配结果。测试环境的服务已部署，推理服务代码和配置说明见 [`backend/clip-service/README.md`](backend/clip-service/README.md)；token 不写入仓库，正式环境上线前需重新配置独立服务。
+
+当前云环境仅用于测试/预发布，正式版尚未上线；正式上线前会使用独立的生产环境，避免测试数据混入真实数据。
+
+流程图：[`figures/clip-wechat-cloud-flow.md`](figures/clip-wechat-cloud-flow.md)。
 
 ---
 

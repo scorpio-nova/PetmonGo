@@ -2,7 +2,7 @@
   "name": "uni-preset-vue",
   "version": "0.0.0",
   "scripts": {
-    "test": "npm run test:markers && npm run test:recognize && npm run test:devtools && npm run test:api-types && npm run test:api-runtime && npm run test:api-entrypoints && npm run test:resource-cache && npm run test:cloudfunctions && npm run test:release",
+    "test": "npm run test:markers && npm run test:recognize && npm run test:devtools && npm run test:api-types && npm run test:api-runtime && npm run test:api-entrypoints && npm run test:resource-cache && npm run test:cloudfunctions && npm run test:recognize-cloud && npm run test:release",
     "test:markers": "tsc --target ES2020 --module commonjs --moduleResolution node --outDir /private/tmp/petmon-marker-test tests/map-markers.test.ts && node /private/tmp/petmon-marker-test/tests/map-markers.test.js",
     "test:recognize": "tsc --target ES2020 --module commonjs --moduleResolution node --outDir /private/tmp/petmon-recognize-test tests/recognize.test.ts && node /private/tmp/petmon-recognize-test/tests/recognize.test.js",
     "test:devtools": "node tests/devtools-config.test.mjs",
@@ -12,6 +12,7 @@
     "test:api-entrypoints": "node tests/api-entrypoints.test.mjs",
     "test:resource-cache": "node tests/resource-cache.test.mjs",
     "test:cloudfunctions": "node tests/cloudfunctions.test.mjs",
+    "test:recognize-cloud": "node tests/recognize-cloudfunction.test.mjs",
     "dev:custom": "uni -p",
     "dev:h5": "uni",
     "dev:h5:ssr": "uni --ssr",

@@ -1,5 +1,7 @@
 # 微信云开发配置指南
 
+> 当前文档只针对测试/预发布环境 `petmon-backend-d0gdzcyjw2d9f70ba`。正式上线时必须创建独立生产环境，不能直接复用测试数据。
+
 ## 一、开通云开发
 
 ### 步骤
@@ -61,6 +63,7 @@ cd cloudfunctions/addPet && npm install
 cd cloudfunctions/addEncounter && npm install
 cd cloudfunctions/addEvent && npm install
 cd cloudfunctions/getNotifications && npm install
+cd cloudfunctions/recognizePet && npm install
 ```
 
 然后在微信开发者工具中逐个上传部署。
@@ -131,3 +134,26 @@ A: 检查是否在云开发控制台开启了内容安全功能
 6. 确认无误后再把同一版本资源上传到生产环境，并使用生产环境的 `fileID`。
 
 不要把管理密钥、云 API 密钥或长期有效签名下发到客户端。资源文件名和 `fileID` 可以进入前端清单，访问权限仍由云存储规则控制。
+
+## 十、接入后端 CLIP 识别
+
+识别功能由微信云托管中的推理服务承载，微信云函数只做临时文件 URL、宠物图库整理和结果转发。推理服务代码位于仓库的 `backend/clip-service/`。
+
+部署步骤：
+
+1. 在可被微信云函数访问的 HTTPS 主机部署 `backend/clip-service`。
+2. 设置推理服务环境变量 `CLIP_SERVICE_TOKEN`，并确认 `GET /healthz` 正常。
+3. 在微信云函数 `recognizePet` 的环境变量中设置：
+
+   ```text
+   CLIP_INFERENCE_URL=https://<service-domain>/v1/clip/match
+   CLIP_INFERENCE_TOKEN=<same-token>
+   ```
+
+4. 将宠物图库照片上传到测试云存储，并确保 `pets.photos[0]` 是可换取临时 URL 的 `fileID`。
+5. 在 `recognize` 页面选择照片，确认出现“CLIP 正在匹配”和 Top-K 结果。
+6. 检查识别结束后 `recognitions/` 临时输入文件已清理，失败时显示可理解的错误和本地预览。
+
+推理服务默认使用仓库中的 `vision_model_quantized.onnx`（约 85 MiB），可以通过 `CLIP_ONNX_MODEL_PATH` 替换模型文件，并用 `CLIP_MODEL_ID` 设置返回的模型标识。模型选择、是否要求登录、相似度阈值和数据保留策略需要产品确认后再锁定。
+
+当前环境的 `recognizePet` 云函数和 `petmon-clip` 云托管服务均已部署。服务域名和运行规格记录在仓库 `TODO.md`；环境变量已在 CloudBase 控制台配置，不要把 token 写入代码或仓库。
